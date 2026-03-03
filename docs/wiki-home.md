@@ -8,10 +8,10 @@ Welcome to the MedVix project wiki — the central documentation hub for our ML 
 
 | Name | Role | Responsibilities |
 |------|------|-----------------|
-| Berkay Aktas | Lead Developer & Scrum Master | Technical architecture, code reviews, Jira board, sprint ceremonies |
-| Arzu Tugce Koca | QA / Documentation Lead | Test cases, manual testing, wiki maintenance, progress reports |
+| Berkay Aktaş | Lead Developer & Scrum Master | Technical architecture, code reviews, Jira board, sprint ceremonies |
+| Arzu Tuğçe Koca | QA / Documentation Lead | Test cases, manual testing, wiki maintenance, progress reports |
 | Nisanur Konur | Product Owner | User stories, backlog prioritization, acceptance criteria sign-off |
-| Ozge Altinok | UX Designer | Figma wireframes, UI design, prototyping |
+| Özge Altınok | UX Designer | Figma wireframes, UI design, prototyping |
 
 ---
 
@@ -59,7 +59,7 @@ Commit format: **Conventional Commits** — `feat:`, `fix:`, `refactor:`, `docs:
 
 ### Week 1 — Sprint Planning (26 Feb 2026)
 
-**Attendees**: Berkay, Arzu Tugce, Nisanur, Ozge
+**Attendees**: Berkay, Arzu Tuğçe, Nisanur, Özge
 
 **Agenda**:
 1. Team role assignments
@@ -81,5 +81,5 @@ Commit format: **Conventional Commits** — `feat:`, `fix:`, `refactor:`, `docs:
 | Set up GitHub repo structure | Berkay | Done |
 | Create Jira project and epics | Berkay | In Progress |
 | Write 20+ user stories with Gherkin AC | Nisanur | In Progress |
-| Design Figma wireframes for all 7 steps | Ozge | In Progress |
-| Set up GitHub Wiki | Arzu Tugce | Done |
+| Design Figma wireframes for all 7 steps | Özge | In Progress |
+| Set up GitHub Wiki | Arzu Tuğçe | Done |

@@ -120,10 +120,10 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org/) (`fe
 
 | Name | Role |
 |------|------|
-| Berkay Aktas | Lead Developer & Scrum Master |
-| Arzu Tugce Koca | QA / Documentation Lead |
+| Berkay Aktaş | Lead Developer & Scrum Master |
+| Arzu Tuğçe Koca | QA / Documentation Lead |
 | Nisanur Konur | Product Owner |
-| Ozge Altinok | UX Designer |
+| Özge Altınok | UX Designer |
 
 ## Links
 
