@@ -129,7 +129,7 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org/) (`fe
 
 | Resource | URL |
 |----------|-----|
-| Jira Board | _Coming soon_ |
+| Jira Board | [MedVix Scrum Board](https://medvix.atlassian.net/jira/software/projects/SCRUM/boards/1) |
 | Figma Wireframes | _Coming soon_ |
 | GitHub Wiki | [Wiki](../../wiki) |
 | API Docs (local) | http://localhost:8000/docs |
