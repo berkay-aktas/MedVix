@@ -39,5 +39,10 @@ class SessionState:
     y_test: Optional[np.ndarray] = field(default=None, repr=False)
     is_prepared: bool = False
 
+    # Step 4-5 — Model Training & Results
+    trained_models: Optional[Dict[str, Any]] = field(
+        default_factory=dict,
+    )
+
     # Navigation
     current_step: int = 1

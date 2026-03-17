@@ -27,6 +27,14 @@ class PreparationConfig(BaseModel):
         default=False,
         description="Whether to apply SMOTE for class balancing",
     )
+    outlier_strategy: Literal["none", "iqr", "zscore_clip"] = Field(
+        default="none",
+        description=(
+            "Outlier handling strategy applied before train/test split. "
+            "'iqr' clips to Q1-1.5*IQR / Q3+1.5*IQR. "
+            "'zscore_clip' clips beyond 3 standard deviations."
+        ),
+    )
 
 
 class ColumnStatsBefore(BaseModel):

@@ -8,6 +8,8 @@ import ColumnMapperModal from './components/modals/ColumnMapperModal';
 import Step1ClinicalContext from './pages/Step1ClinicalContext/Step1ClinicalContext';
 import Step2DataExploration from './pages/Step2DataExploration/Step2DataExploration';
 import Step3DataPreparation from './pages/Step3DataPreparation/Step3DataPreparation';
+import Step4ModelParameters from './pages/Step4ModelParameters/Step4ModelParameters';
+import Step5Results from './pages/Step5Results/Step5Results';
 import usePipelineStore from './stores/usePipelineStore';
 import useDataStore from './stores/useDataStore';
 import Card from './components/ui/Card';
@@ -42,9 +44,9 @@ function CurrentStep() {
     case 3:
       return <Step3DataPreparation />;
     case 4:
-      return <PlaceholderStep step={4} sprint={3} />;
+      return <Step4ModelParameters />;
     case 5:
-      return <PlaceholderStep step={5} sprint={3} />;
+      return <Step5Results />;
     case 6:
       return <PlaceholderStep step={6} sprint={4} />;
     case 7:

@@ -105,6 +105,17 @@ def prepare_data(
 
     missing_after = int(work[feature_cols].isna().sum().sum())
 
+    # ----- 3b. Handle outliers (before split, numeric columns only) -----
+    outliers_clipped = 0
+    if config.outlier_strategy != "none":
+        numeric_feature_cols = [
+            c for c in feature_cols
+            if c in work.columns and pd.api.types.is_numeric_dtype(work[c])
+        ]
+        outliers_clipped = _handle_outliers(
+            work, numeric_feature_cols, config.outlier_strategy
+        )
+
     # ----- 4. Encode target -----
     le_target = LabelEncoder()
     y = le_target.fit_transform(work[target_col].astype(str))
@@ -327,3 +338,44 @@ def _safe_float_val(value: Any) -> float:
         return round(f, 6)
     except (TypeError, ValueError):
         return 0.0
+
+
+def _handle_outliers(
+    df: pd.DataFrame,
+    numeric_cols: List[str],
+    strategy: str,
+) -> int:
+    """Clip outliers in-place on *numeric_cols* and return total values clipped.
+
+    Strategies:
+        ``iqr``  — clip to [Q1 - 1.5*IQR, Q3 + 1.5*IQR]
+        ``zscore_clip`` — clip to [mean - 3*std, mean + 3*std]
+    """
+    total_clipped = 0
+
+    for col in numeric_cols:
+        series = df[col]
+        before_values = series.copy()
+
+        if strategy == "iqr":
+            q1 = series.quantile(0.25)
+            q3 = series.quantile(0.75)
+            iqr = q3 - q1
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
+            df[col] = series.clip(lower=lower, upper=upper)
+
+        elif strategy == "zscore_clip":
+            mean = series.mean()
+            std = series.std()
+            if std == 0 or pd.isna(std):
+                continue
+            lower = mean - 3 * std
+            upper = mean + 3 * std
+            df[col] = series.clip(lower=lower, upper=upper)
+
+        # Count how many values were actually changed
+        changed = (df[col] != before_values).sum()
+        total_clipped += int(changed)
+
+    return total_clipped
