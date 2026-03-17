@@ -1,7 +1,27 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+"""MedVix FastAPI application entry point."""
 
-from app.routers import health
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app.routers import data, domains, health, preparation
+from app.services.session_service import cleanup_expired_sessions
+
+logger = logging.getLogger("medvix")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown lifecycle events."""
+    logger.info("MedVix API started")
+    cleanup_expired_sessions()
+    yield
+    logger.info("MedVix API shutting down — cleaning up sessions")
+    cleanup_expired_sessions(max_age_minutes=0)
+
 
 app = FastAPI(
     title="MedVix API",
@@ -9,6 +29,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -19,4 +40,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- Routers ---
 app.include_router(health.router)
+app.include_router(domains.router)
+app.include_router(data.router)
+app.include_router(preparation.router)
+
+
+# --- Global exception handlers ---
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc), "error_code": "VALIDATION_ERROR"},
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "An internal server error occurred.",
+            "error_code": "INTERNAL_ERROR",
+        },
+    )
