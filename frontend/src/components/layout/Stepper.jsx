@@ -57,7 +57,7 @@ export default function Stepper() {
                   )}
                   aria-current={isActive ? 'step' : undefined}
                   aria-label={`Step ${step.number}: ${step.label}${isDone ? ' (completed)' : ''}${isLocked ? ' (locked)' : ''}`}
-                  disabled={isLocked && !isActive}
+                  disabled={isLocked && !isActive && step.number !== 3}
                 >
                   {/* Step number circle */}
                   <div
