@@ -20,8 +20,8 @@ Welcome to the MedVix project wiki — the central documentation hub for our ML 
 | Resource | Link |
 |----------|------|
 | GitHub Repository | [berkay-aktas/MedVix](https://github.com/berkay-aktas/MedVix) |
-| Jira Board | _Link to be added_ |
-| Figma Wireframes | _Link to be added_ |
+| Jira Board | [MedVix Scrum Board](https://medvix.atlassian.net/jira/software/projects/SCRUM/boards/1) |
+| Figma Wireframes | [MedVix Wireframes — Sprint 1](https://www.figma.com/proto/SC3UNoIwFPNFzhrS8BiQAv/MedVix-Wireframes-%E2%80%94-Sprint-1?node-id=11-2&p=f&t=q4M5BnJmQCYI75Md-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A2) |
 | API Docs (local) | http://localhost:8000/docs |
 
 ---
@@ -79,7 +79,61 @@ Commit format: **Conventional Commits** — `feat:`, `fix:`, `refactor:`, `docs:
 | Action | Owner | Status |
 |--------|-------|--------|
 | Set up GitHub repo structure | Berkay | Done |
-| Create Jira project and epics | Berkay | In Progress |
-| Write 20+ user stories with Gherkin AC | Nisanur | In Progress |
-| Design Figma wireframes for all 7 steps | Özge | In Progress |
+| Create Jira project and epics | Berkay | Done |
+| Write 20+ user stories with Gherkin AC | Nisanur | Done |
+| Design Figma wireframes for all 7 steps | Özge | Done |
 | Set up GitHub Wiki | Arzu Tuğçe | Done |
+
+---
+
+## Sprint 2 — MVP Steps 1-3 (due 18 Mar 2026)
+
+**Status**: Complete
+
+### Deliverables
+| Artifact | Status | Link |
+|----------|--------|------|
+| Working App — Steps 1-3 | Done | `docker compose up` or `localhost:5173` + `localhost:8000` |
+| Column Mapper Modal | Done | Validate → save → schemaOK gates Step 3 |
+| Step 3 Before/After Charts | Done | Normalisation bars + SMOTE class balance bars |
+| Test Report | Done | [Sprint 2 Test Report](testing/sprint2-test-report.md) |
+| Progress Report | Done | [Sprint 2 Progress Report](sprint2-progress-report.md) |
+
+### Sprint 2 Metrics
+| Metric | Target | Result |
+|--------|--------|--------|
+| CSV Upload Success Rate | 100% | Pass (5 valid + 5 invalid) |
+| Column Mapper Gate | 0 bypass | Pass |
+| Step 3 Controls | All functional | Pass |
+| Domain Count | 20/20 | Pass |
+| Test Coverage | 100% | Pass (12/12 stories) |
+
+### Key Documentation
+- [API Documentation — Sprint 2](api-docs-sprint2.md)
+- [Test Plan](testing/sprint2-test-plan.md)
+- [Test Cases (50+)](testing/sprint2-test-cases.md)
+- [Test Execution Report](testing/sprint2-test-report.md)
+- [Progress Report](sprint2-progress-report.md)
+
+### Week 3-4 Meeting Notes (11 Mar 2026 — Sprint 2 Planning)
+
+**Attendees**: Berkay, Arzu Tuğçe, Nisanur, Özge
+
+**Decisions**:
+- Chose Tailwind CSS over vanilla CSS for consistent design system
+- Zustand for state management (lighter than Redux, cleaner than Context)
+- Synthetic datasets generated with numpy (fixed seeds) for all 20 domains
+- Data quality score (0-100) added as enhancement beyond requirements
+- Red blocked banner for Column Mapper gate (assignment requirement)
+
+**Action Items**:
+| Action | Owner | Status |
+|--------|-------|--------|
+| Backend API for Steps 1-3 (10 endpoints) | Berkay | Done |
+| 20 synthetic clinical CSV datasets | Berkay | Done |
+| Backend pytest suite (148 tests) | Berkay | Done |
+| Frontend React + Tailwind app (41 components) | Özge | Done |
+| Sprint 2 test plan, cases, and report | Arzu Tuğçe | Done |
+| API documentation and progress report | Arzu Tuğçe | Done |
+| Clinical context descriptions for 20 domains | Nisanur | Done |
+| ML glossary with 25+ terms | Nisanur | Done |
