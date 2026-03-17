@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.routers import data, domains, health, preparation
+from app.routers import data, domains, health, ml, preparation
 from app.services.session_service import cleanup_expired_sessions
 
 logger = logging.getLogger("medvix")
@@ -45,6 +45,7 @@ app.include_router(health.router)
 app.include_router(domains.router)
 app.include_router(data.router)
 app.include_router(preparation.router)
+app.include_router(ml.router)
 
 
 # --- Global exception handlers ---
