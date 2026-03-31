@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import Card from '../../components/ui/Card';
+import Banner from '../../components/ui/Banner';
 
 // Cell labels for a 2x2 confusion matrix
 const CELL_LABELS_2X2 = [
@@ -102,6 +103,26 @@ export default function ConfusionMatrix({ confusionMatrix }) {
           </div>
         </div>
       </div>
+
+      {/* Clinical interpretation banners for binary classification */}
+      {is2x2 && (
+        <div className="mt-4 space-y-2">
+          {matrix[1][0] > 0 && (
+            <Banner
+              variant="error"
+              title={`${matrix[1][0]} False Negative${matrix[1][0] > 1 ? 's' : ''}`}
+              message="Patients who actually had the condition were predicted as healthy. In clinical screening, these missed diagnoses are the most dangerous errors."
+            />
+          )}
+          {matrix[0][1] > 0 && (
+            <Banner
+              variant="info"
+              title={`${matrix[0][1]} False Positive${matrix[0][1] > 1 ? 's' : ''}`}
+              message="Patients without the condition were flagged as at-risk. While safer than missed cases, these lead to unnecessary follow-up procedures and patient anxiety."
+            />
+          )}
+        </div>
+      )}
     </Card>
   );
 }
