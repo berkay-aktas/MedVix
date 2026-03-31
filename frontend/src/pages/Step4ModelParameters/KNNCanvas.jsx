@@ -141,7 +141,9 @@ export default function KNNCanvas({ k = 5 }) {
     // Draw K-radius circle (dashed)
     const npx = toX(newPatient.x);
     const npy = toY(newPatient.y);
-    const radiusPx = kRadius * (W - 2 * pad);
+    // Use the smaller dimension so circle isn't stretched on wide canvases
+    const scale = Math.min(W - 2 * pad, H - 2 * pad);
+    const radiusPx = kRadius * scale;
 
     ctx.beginPath();
     ctx.setLineDash([6, 4]);
