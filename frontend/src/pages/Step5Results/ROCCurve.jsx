@@ -95,6 +95,22 @@ export default function ROCCurve({ rocData }) {
           />
         </AreaChart>
       </ResponsiveContainer>
+
+      <p className="text-xs text-muted mt-3 leading-relaxed">
+        The ROC curve plots the trade-off between detecting positive cases (True
+        Positive Rate, y-axis) and incorrectly flagging negative cases (False
+        Positive Rate, x-axis) across every possible decision threshold. The
+        dashed diagonal represents a random classifier (AUC&nbsp;=&nbsp;0.50).
+        A model that hugs the top-left corner is better at separating the two
+        classes.{' '}
+        {rocData.auc != null && (
+          <span className="font-medium text-dark">
+            This model&apos;s AUC of {rocData.auc.toFixed(3)} means it correctly
+            ranks a random positive case above a random negative case{' '}
+            {(rocData.auc * 100).toFixed(0)}% of the time.
+          </span>
+        )}
+      </p>
     </Card>
   );
 }
