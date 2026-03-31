@@ -62,14 +62,9 @@ server {
 }
 NGINX
 
-# Start script
-RUN cat > /app/start.sh << 'START'
-#!/bin/bash
-cd /app/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-nginx -g 'daemon off;'
-START
-RUN chmod +x /app/start.sh
+# Start script — use printf to avoid CRLF issues
+RUN printf '#!/bin/bash\ncd /app/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 &\nnginx -g "daemon off;"\n' > /app/start.sh && chmod +x /app/start.sh
 
 EXPOSE 7860
 
-CMD ["/app/start.sh"]
+CMD ["/bin/bash", "/app/start.sh"]
