@@ -5,10 +5,12 @@ import useMLStore from '../../stores/useMLStore';
 import useDataStore from '../../stores/useDataStore';
 import ModelSelector from './ModelSelector';
 import HyperparameterPanel from './HyperparameterPanel';
+import KNNCanvas from './KNNCanvas';
 
 export default function Step4ModelParameters() {
   const selectedModel = useMLStore((s) => s.selectedModel);
   const activeModelResult = useMLStore((s) => s.activeModelResult);
+  const kValue = useMLStore((s) => s.hyperparams?.n_neighbors ?? 5);
   const sessionId = useDataStore((s) => s.sessionId);
   const [paramConfig, setParamConfig] = useState(null);
 
@@ -43,6 +45,13 @@ export default function Step4ModelParameters() {
       <div className="space-y-5">
         {/* Model selector grid */}
         <ModelSelector onParamsLoaded={setParamConfig} />
+
+        {/* KNN Visualisation — only when KNN selected */}
+        {selectedModel === 'knn' && (
+          <div className="animate-slide-up">
+            <KNNCanvas k={kValue} />
+          </div>
+        )}
 
         {/* Hyperparameter panel — only after model selected */}
         {selectedModel && (
