@@ -846,7 +846,7 @@ MedVix follows a 5-sprint Scrum schedule with two-week sprints. The project jury
 |--------|-------|-------|--------|-----------------|
 | 1 | 18 Feb – 4 Mar 2026 | Foundation and Design | Done | 7 stories |
 | 2 | 4 Mar – 18 Mar 2026 | MVP (Steps 1–3) | Done | 12 stories, 50 SP |
-| 3 | 18 Mar – 1 Apr 2026 | Core ML (Steps 4–5) | In Progress | 8 stories, 27 SP |
+| 3 | 18 Mar – 1 Apr 2026 | Core ML (Steps 4–5) | Done | 8 stories, 32 SP |
 | 4 | 1 Apr – 15 Apr 2026 | Full Pipeline (Steps 6–7) | Planned | — |
 | 5 | 15 Apr – 29 Apr 2026 | Polish and Test | Planned | — |
 | Jury | 6 May 2026 | Final Presentation | Planned | — |
@@ -870,12 +870,19 @@ MedVix follows a 5-sprint Scrum schedule with two-week sprints. The project jury
 - GitHub Wiki: home page, ML glossary (30 terms), clinical context descriptions for all 20 domains, demo script, sprint planning notes
 - 20 synthetic CSV datasets generated and committed
 
-### Sprint 3 Goals (In Progress)
+### Sprint 3 Deliverables (Done)
 
-- Step 4: Model selection UI, hyperparameter sliders, auto-retrain integration with backend
-- Step 5: Metrics dashboard, confusion matrix, ROC/PR curves, cross-validation display
-- Backend ML routers: `/api/ml/hyperparams/{type}`, `/api/ml/train`, `/api/ml/models`, `/api/ml/compare`
-- Model comparison radar chart
+- Step 4: Model selection UI with 8 ML models (6 required + XGBoost, LightGBM), interactive hyperparameter sliders with clinical descriptions, Quick Start and Optimized presets, 300ms debounced auto-retrain toggle
+- Step 5: 6-metric dashboard with colour-coded thresholds (green/amber/red), confusion matrix with FN/FP clinical banners, ROC curve with diagonal reference and explanatory note, PR curve, k-fold cross-validation, overfitting detector, low sensitivity danger banner (<50%)
+- Model comparison: "+ Compare" dropdown workflow with no-duplicate enforcement, sensitivity column colour coding, "Compare All" shortcut, per-row removal, best-per-metric highlighting with trophy icon
+- Backend ML endpoints: `GET /api/ml/hyperparams/{type}`, `POST /api/ml/train`, `GET /api/ml/models`, `POST /api/ml/compare`
+- Test suite: 52 automated pytest tests covering Steps 4-5 (35 new + 17 existing), 48 manual test cases, 100% pass rate
+- Documentation: [progress report](docs/sprint3-progress-report.md), [API docs](docs/api-docs-sprint3.md), [test plan](docs/testing/sprint3-test-plan.md), [test cases](docs/testing/sprint3-test-cases.md), [test report](docs/testing/sprint3-test-report.md), [demo script](docs/sprint3-demo-script.md)
+
+### Sprint 4 Goals (In Progress)
+
+- Step 6: SHAP feature importance bar chart, single-patient waterfall explanation
+- Step 7: Subgroup fairness table, EU AI Act compliance checklist, bias detection banner, PDF summary certificate
 
 ---
 
