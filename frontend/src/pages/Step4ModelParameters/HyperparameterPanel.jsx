@@ -94,7 +94,7 @@ export default function HyperparameterPanel({ paramConfig }) {
 
     debounceRef.current = setTimeout(() => {
       handleTrain();
-    }, 500);
+    }, 300);
 
     return () => {
       if (debounceRef.current) {
@@ -229,7 +229,7 @@ export default function HyperparameterPanel({ paramConfig }) {
           enabled={autoRetrain}
           onChange={setAutoRetrain}
           label="Auto-retrain"
-          description="Automatically retrain the model 500ms after any parameter change."
+          description="Automatically retrain the model 300ms after any parameter change."
         />
       </div>
 
