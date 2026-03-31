@@ -1,3 +1,13 @@
+---
+title: MedVix
+emoji: 🏥
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # MedVix — ML Visualization Tool for Healthcare Professionals
 
 > An interactive 7-step pipeline for training, evaluating, and explaining machine learning models across 20 clinical specialties.
