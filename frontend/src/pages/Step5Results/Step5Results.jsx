@@ -96,6 +96,22 @@ export default function Step5Results() {
         />
       )}
 
+      {/* Low Sensitivity Danger Banner */}
+      {(() => {
+        const sens = result.metrics?.find((m) => m.name === 'sensitivity');
+        if (sens && sens.value < 0.5) {
+          return (
+            <Banner
+              variant="error"
+              title="Dangerously Low Sensitivity"
+              message={`Sensitivity is only ${(sens.value * 100).toFixed(1)}% — below the 50% clinical safety threshold. This model fails to detect more than half of positive cases (e.g., patients with the condition classified as healthy). Consider adjusting hyperparameters or trying a different model before any clinical use.`}
+              className="mb-5"
+            />
+          );
+        }
+        return null;
+      })()}
+
       <div className="space-y-5">
         {/* Metrics grid */}
         <MetricsGrid metrics={result.metrics} />
