@@ -7,7 +7,7 @@ const METRIC_COLUMNS = [
   { key: 'sensitivity', label: 'Sensitivity' },
   { key: 'specificity', label: 'Specificity' },
   { key: 'precision', label: 'Precision' },
-  { key: 'f1_score', label: 'F1' },
+  { key: 'f1', label: 'F1' },
   { key: 'auc_roc', label: 'AUC-ROC' },
 ];
 
