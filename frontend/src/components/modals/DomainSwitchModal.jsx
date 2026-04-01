@@ -5,6 +5,7 @@ import useModalStore from '../../stores/useModalStore';
 import usePipelineStore from '../../stores/usePipelineStore';
 import useDataStore from '../../stores/useDataStore';
 import usePreparationStore from '../../stores/usePreparationStore';
+import useMLStore from '../../stores/useMLStore';
 import DOMAINS, { getDomainById } from '../../utils/domains';
 
 export default function DomainSwitchModal() {
@@ -14,6 +15,7 @@ export default function DomainSwitchModal() {
     usePipelineStore();
   const resetData = useDataStore((s) => s.resetData);
   const resetPreparation = usePreparationStore((s) => s.resetPreparation);
+  const resetML = useMLStore((s) => s.resetML);
 
   const targetDomain = domainSwitchTarget
     ? getDomainById(domainSwitchTarget)
@@ -27,6 +29,7 @@ export default function DomainSwitchModal() {
       resetPipeline();
       resetData();
       resetPreparation();
+      resetML();
 
       // Set new domain and go to step 1
       setDomain(domainSwitchTarget);
