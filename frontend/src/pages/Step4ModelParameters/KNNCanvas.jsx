@@ -127,23 +127,20 @@ export default function KNNCanvas({ k = 5 }) {
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(0, 0, W, H);
 
-    // Compute distances from new patient
+    // New patient position in pixels
+    const npx = toX(newPatient.x);
+    const npy = toY(newPatient.y);
+
+    // Compute distances in PIXEL space so the circle matches visually
     const distances = points.map((p, i) => ({
       idx: i,
-      dist: euclidean([p.x, p.y], [newPatient.x, newPatient.y]),
+      dist: Math.sqrt((toX(p.x) - npx) ** 2 + (toY(p.y) - npy) ** 2),
     }));
     distances.sort((a, b) => a.dist - b.dist);
 
     const kClamped = Math.min(k, points.length);
     const kNearest = new Set(distances.slice(0, kClamped).map((d) => d.idx));
-    const kRadius = distances[kClamped - 1]?.dist ?? 0.1;
-
-    // Draw K-radius circle (dashed)
-    const npx = toX(newPatient.x);
-    const npy = toY(newPatient.y);
-    // Use the smaller dimension so circle isn't stretched on wide canvases
-    const scale = Math.min(W - 2 * pad, H - 2 * pad);
-    const radiusPx = kRadius * scale;
+    const radiusPx = (distances[kClamped - 1]?.dist ?? 10) + 8; // +8px padding so K-th point sits inside
 
     ctx.beginPath();
     ctx.setLineDash([6, 4]);
@@ -162,9 +159,11 @@ export default function KNNCanvas({ k = 5 }) {
     // Draw lines from new patient to K neighbours
     distances.slice(0, kClamped).forEach(({ idx }) => {
       const p = points[idx];
+      const px = toX(p.x);
+      const py = toY(p.y);
       ctx.beginPath();
       ctx.moveTo(npx, npy);
-      ctx.lineTo(toX(p.x), toY(p.y));
+      ctx.lineTo(px, py);
       ctx.strokeStyle = 'rgba(100, 116, 139, 0.3)';
       ctx.lineWidth = 1;
       ctx.stroke();
