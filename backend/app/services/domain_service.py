@@ -71,6 +71,24 @@ _register(
         dataset_rows=303,
         dataset_features=13,
         positive_rate="~54%",
+        sense_check_text=(
+            "The top features (chest pain type, maximum heart rate, ST depression) "
+            "align with established cardiology literature. Exercise-related variables "
+            "are expected top predictors because coronary artery disease directly "
+            "affects cardiac response to physical stress."
+        ),
+        subgroup_columns={
+            "sex_column": "sex",
+            "sex_male_value": 1,
+            "age_column": "age",
+            "age_threshold": 60,
+        },
+        population_stats={
+            "male": 0.68,
+            "female": 0.32,
+            "age_under_threshold": 0.45,
+            "age_over_threshold": 0.55,
+        },
     )
 )
 
@@ -120,6 +138,13 @@ _register(
         dataset_rows=5856,
         dataset_features=10,
         positive_rate="~75%",
+        sense_check_text=(
+            "Opacity score and contrast features are expected top predictors as "
+            "pneumonia manifests as visible opacities in lung fields. Texture-based "
+            "features capture the characteristic patterns of consolidation."
+        ),
+        subgroup_columns=None,
+        population_stats=None,
     )
 )
 
@@ -184,6 +209,20 @@ _register(
         dataset_rows=400,
         dataset_features=24,
         positive_rate="~62%",
+        sense_check_text=(
+            "Serum creatinine, blood urea, and haemoglobin are clinically validated "
+            "markers of kidney function. Elevated creatinine and urea indicate "
+            "impaired filtration, while low haemoglobin reflects reduced "
+            "erythropoietin production in CKD."
+        ),
+        subgroup_columns={
+            "age_column": "age",
+            "age_threshold": 60,
+        },
+        population_stats={
+            "age_under_threshold": 0.40,
+            "age_over_threshold": 0.60,
+        },
     )
 )
 
@@ -234,6 +273,13 @@ _register(
         dataset_rows=569,
         dataset_features=30,
         positive_rate="~37% malignant",
+        sense_check_text=(
+            "Concavity, concave points, and perimeter are well-established markers "
+            "of malignancy. Irregular cell boundaries and larger nuclei are hallmarks "
+            "of aggressive tumour growth seen in histopathology."
+        ),
+        subgroup_columns=None,
+        population_stats=None,
     )
 )
 
@@ -299,6 +345,14 @@ _register(
         dataset_rows=195,
         dataset_features=22,
         positive_rate="~75% Parkinson's",
+        sense_check_text=(
+            "Jitter and shimmer measures (vocal instability) are clinically "
+            "established biomarkers of Parkinson's. The disease affects laryngeal "
+            "muscle control, causing measurable changes in voice frequency and "
+            "amplitude variation."
+        ),
+        subgroup_columns=None,
+        population_stats=None,
     )
 )
 
@@ -346,6 +400,19 @@ _register(
         dataset_rows=768,
         dataset_features=8,
         positive_rate="~35%",
+        sense_check_text=(
+            "Glucose level and BMI are the strongest predictors, consistent with "
+            "the pathophysiology of type 2 diabetes. Insulin resistance directly "
+            "correlates with blood glucose levels and adiposity."
+        ),
+        subgroup_columns={
+            "age_column": "Age",
+            "age_threshold": 35,
+        },
+        population_stats={
+            "age_under_threshold": 0.55,
+            "age_over_threshold": 0.45,
+        },
     )
 )
 
@@ -397,6 +464,23 @@ _register(
         dataset_rows=583,
         dataset_features=10,
         positive_rate="~71% liver disease",
+        sense_check_text=(
+            "Liver enzymes (ALT, AST) and bilirubin levels are standard clinical "
+            "markers of hepatic damage. Elevated transaminases indicate hepatocyte "
+            "injury, while bilirubin reflects impaired liver metabolism."
+        ),
+        subgroup_columns={
+            "sex_column": "Gender",
+            "sex_male_value": 1,
+            "age_column": "Age",
+            "age_threshold": 50,
+        },
+        population_stats={
+            "male": 0.72,
+            "female": 0.28,
+            "age_under_threshold": 0.60,
+            "age_over_threshold": 0.40,
+        },
     )
 )
 
@@ -447,6 +531,23 @@ _register(
         dataset_rows=5110,
         dataset_features=10,
         positive_rate="~5%",
+        sense_check_text=(
+            "Age and hypertension are the strongest stroke predictors, consistent "
+            "with epidemiological evidence. Stroke risk doubles each decade after "
+            "age 55, and hypertension is the single most modifiable risk factor."
+        ),
+        subgroup_columns={
+            "sex_column": "gender",
+            "sex_male_value": 1,
+            "age_column": "age",
+            "age_threshold": 65,
+        },
+        population_stats={
+            "male": 0.49,
+            "female": 0.51,
+            "age_under_threshold": 0.75,
+            "age_over_threshold": 0.25,
+        },
     )
 )
 
@@ -501,6 +602,23 @@ _register(
         dataset_rows=1259,
         dataset_features=13,
         positive_rate="~50%",
+        sense_check_text=(
+            "Stress level, sleep hours, and social support are well-documented "
+            "risk factors for depression. Poor sleep and chronic stress dysregulate "
+            "the HPA axis, while social isolation reduces protective buffers."
+        ),
+        subgroup_columns={
+            "sex_column": "Gender",
+            "sex_male_value": 1,
+            "age_column": "Age",
+            "age_threshold": 40,
+        },
+        population_stats={
+            "male": 0.48,
+            "female": 0.52,
+            "age_under_threshold": 0.60,
+            "age_over_threshold": 0.40,
+        },
     )
 )
 
@@ -557,6 +675,23 @@ _register(
         dataset_rows=4238,
         dataset_features=15,
         positive_rate="~15%",
+        sense_check_text=(
+            "Smoking status and cigarettes per day are the dominant COPD predictors, "
+            "reflecting the established causal link between tobacco exposure and "
+            "chronic obstructive pulmonary disease. Age compounds the damage over time."
+        ),
+        subgroup_columns={
+            "sex_column": "male",
+            "sex_male_value": 1,
+            "age_column": "age",
+            "age_threshold": 55,
+        },
+        population_stats={
+            "male": 0.56,
+            "female": 0.44,
+            "age_under_threshold": 0.50,
+            "age_over_threshold": 0.50,
+        },
     )
 )
 
@@ -600,6 +735,19 @@ _register(
         dataset_rows=1421,
         dataset_features=5,
         positive_rate="~45%",
+        sense_check_text=(
+            "Haemoglobin, MCH, and MCV are the standard haematological indices "
+            "for anaemia diagnosis. Low haemoglobin directly indicates anaemia, "
+            "while MCH and MCV differentiate iron-deficiency from other types."
+        ),
+        subgroup_columns={
+            "sex_column": "Gender",
+            "sex_male_value": 1,
+        },
+        population_stats={
+            "male": 0.45,
+            "female": 0.55,
+        },
     )
 )
 
@@ -654,6 +802,19 @@ _register(
         dataset_rows=366,
         dataset_features=34,
         positive_rate=None,
+        sense_check_text=(
+            "Erythema, scaling patterns, and lesion border characteristics are "
+            "primary diagnostic criteria in dermatology. The combination of specific "
+            "papule types and distribution patterns differentiates skin conditions."
+        ),
+        subgroup_columns={
+            "age_column": "age",
+            "age_threshold": 40,
+        },
+        population_stats={
+            "age_under_threshold": 0.55,
+            "age_over_threshold": 0.45,
+        },
     )
 )
 
@@ -716,6 +877,13 @@ _register(
         dataset_rows=1151,
         dataset_features=18,
         positive_rate=None,
+        sense_check_text=(
+            "Microaneurysm detection scores and exudate features directly correspond "
+            "to clinical grading of diabetic retinopathy. These are the same "
+            "pathological signs ophthalmologists assess during fundoscopic examination."
+        ),
+        subgroup_columns=None,
+        population_stats=None,
     )
 )
 
@@ -761,6 +929,14 @@ _register(
         dataset_rows=310,
         dataset_features=6,
         positive_rate="~68% abnormal",
+        sense_check_text=(
+            "Pelvic incidence and degree of spondylolisthesis are the key "
+            "biomechanical parameters used in spinal assessment. Higher pelvic "
+            "incidence correlates with lumbar lordosis abnormalities and "
+            "vertebral slippage."
+        ),
+        subgroup_columns=None,
+        population_stats=None,
     )
 )
 
@@ -809,6 +985,21 @@ _register(
         dataset_rows=599,
         dataset_features=9,
         positive_rate="~35%",
+        sense_check_text=(
+            "Lactate levels, heart rate, and white blood cell count are components "
+            "of established sepsis screening tools (qSOFA, SOFA). Elevated lactate "
+            "indicates tissue hypoperfusion, a hallmark of septic shock."
+        ),
+        subgroup_columns={
+            "age_column": "Age",
+            "age_threshold": 65,
+        },
+        population_stats={
+            "male": 0.55,
+            "female": 0.45,
+            "age_under_threshold": 0.45,
+            "age_over_threshold": 0.55,
+        },
     )
 )
 
@@ -878,6 +1069,19 @@ _register(
         dataset_rows=2126,
         dataset_features=21,
         positive_rate=None,
+        sense_check_text=(
+            "Glucose tolerance and BMI are the primary screening criteria for "
+            "gestational diabetes. Pregnancy-induced insulin resistance is "
+            "exacerbated by higher BMI and family history of diabetes."
+        ),
+        subgroup_columns={
+            "age_column": "age",
+            "age_threshold": 30,
+        },
+        population_stats={
+            "age_under_threshold": 0.55,
+            "age_over_threshold": 0.45,
+        },
     )
 )
 
@@ -934,6 +1138,23 @@ _register(
         dataset_rows=452,
         dataset_features=279,
         positive_rate=None,
+        sense_check_text=(
+            "QRS duration and P-R interval are fundamental ECG parameters for "
+            "arrhythmia classification. Prolonged QRS suggests bundle branch blocks, "
+            "while abnormal P-R intervals indicate conduction delays."
+        ),
+        subgroup_columns={
+            "sex_column": "sex",
+            "sex_male_value": 0,
+            "age_column": "age",
+            "age_threshold": 60,
+        },
+        population_stats={
+            "male": 0.55,
+            "female": 0.45,
+            "age_under_threshold": 0.50,
+            "age_over_threshold": 0.50,
+        },
     )
 )
 
@@ -990,6 +1211,19 @@ _register(
         dataset_rows=858,
         dataset_features=13,
         positive_rate="~7%",
+        sense_check_text=(
+            "HPV status, age, and number of sexual partners are established risk "
+            "factors for cervical cancer. HPV is the primary causative agent, and "
+            "screening guidelines are stratified by age and sexual history."
+        ),
+        subgroup_columns={
+            "age_column": "Age",
+            "age_threshold": 40,
+        },
+        population_stats={
+            "age_under_threshold": 0.65,
+            "age_over_threshold": 0.35,
+        },
     )
 )
 
@@ -1054,6 +1288,23 @@ _register(
         dataset_rows=9172,
         dataset_features=21,
         positive_rate="~8%",
+        sense_check_text=(
+            "TSH and thyroid hormone levels (T3, T4, FTI) are the definitive "
+            "biochemical markers for thyroid disease. Abnormal TSH with "
+            "corresponding hormone changes differentiates hypo- from hyperthyroidism."
+        ),
+        subgroup_columns={
+            "sex_column": "sex",
+            "sex_male_value": 1,
+            "age_column": "age",
+            "age_threshold": 50,
+        },
+        population_stats={
+            "male": 0.30,
+            "female": 0.70,
+            "age_under_threshold": 0.55,
+            "age_over_threshold": 0.45,
+        },
     )
 )
 
@@ -1112,6 +1363,21 @@ _register(
         dataset_rows=101766,
         dataset_features=15,
         positive_rate="~11%",
+        sense_check_text=(
+            "Number of medications, time in hospital, and number of diagnoses are "
+            "validated predictors of hospital readmission. Polypharmacy and "
+            "comorbidity burden increase the complexity of post-discharge management."
+        ),
+        subgroup_columns={
+            "age_column": "age",
+            "age_threshold": 65,
+        },
+        population_stats={
+            "male": 0.47,
+            "female": 0.53,
+            "age_under_threshold": 0.45,
+            "age_over_threshold": 0.55,
+        },
     )
 )
 

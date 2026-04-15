@@ -1,6 +1,6 @@
 """Pydantic models for clinical domain metadata (Step 1)."""
 
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -62,6 +62,18 @@ class DomainDetail(DomainSummary):
     positive_rate: Optional[str] = Field(
         default=None,
         description="Approximate prevalence of the positive class",
+    )
+    sense_check_text: Optional[str] = Field(
+        default=None,
+        description="Clinical sense-check explanation for Step 6 explainability",
+    )
+    subgroup_columns: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Config for subgroup fairness analysis (sex/age column indices and thresholds)",
+    )
+    population_stats: Optional[Dict[str, float]] = Field(
+        default=None,
+        description="Real-world population percentages for training data comparison",
     )
 
 
