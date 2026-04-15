@@ -43,6 +43,9 @@ class SessionState:
     trained_models: Optional[Dict[str, Any]] = field(
         default_factory=dict,
     )
+    model_objects: Optional[Dict[str, Any]] = field(
+        default_factory=dict, repr=False
+    )
 
     # Navigation
     current_step: int = 1

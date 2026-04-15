@@ -792,6 +792,11 @@ def train_model(
         session.trained_models = {}
     session.trained_models[model_id] = response.model_dump()
 
+    # Store fitted model object for SHAP explainability (Step 6)
+    if not hasattr(session, "model_objects") or session.model_objects is None:
+        session.model_objects = {}
+    session.model_objects[model_id] = model
+
     return response
 
 
