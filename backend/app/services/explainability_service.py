@@ -180,14 +180,24 @@ def _build_patient_options(session: SessionState, domain) -> List[PatientOption]
     if n == 0:
         return []
 
+    # Inverse-transform to get original-scale values for labels
+    if hasattr(session, "scaler") and session.scaler is not None:
+        X_test_raw = session.scaler.inverse_transform(X_test)
+    else:
+        X_test_raw = X_test
+
     # Pick 3 evenly spaced indices
     indices = [0, n // 3, min(2 * n // 3, n - 1)]
     if n < 3:
         indices = list(range(n))
 
+    # Get sex_male_value from domain config
+    subgroup_config = domain.subgroup_columns or {}
+    male_val = subgroup_config.get("sex_male_value", 1)
+
     patients = []
     for idx in indices:
-        row = X_test[idx]
+        row = X_test_raw[idx]
         # Build descriptive label from available features
         parts = [f"Patient #{idx + 1}"]
 
@@ -196,10 +206,10 @@ def _build_patient_options(session: SessionState, domain) -> List[PatientOption]
             col_lower = col.lower()
             if j < len(row):
                 if "age" in col_lower:
-                    parts.append(f"Age {int(row[j])}")
+                    parts.append(f"Age {int(round(row[j]))}")
                 elif "sex" in col_lower or "gender" in col_lower:
-                    val = int(row[j])
-                    parts.append("Male" if val == 1 else "Female")
+                    val = int(round(row[j]))
+                    parts.append("Male" if val == male_val else "Female")
 
         label = " — ".join(parts[:3])  # Limit to 3 parts
         patients.append(PatientOption(index=idx, label=label))
@@ -229,6 +239,12 @@ def compute_waterfall(session: SessionState, model_id: str, patient_index: int) 
         raise ValueError(f"Patient index {patient_index} out of range (0-{len(X_test)-1}).")
 
     patient = X_test[patient_index:patient_index + 1]
+
+    # Get original-scale values for display labels
+    if hasattr(session, "scaler") and session.scaler is not None:
+        patient_raw = session.scaler.inverse_transform(patient)
+    else:
+        patient_raw = patient
 
     # Compute SHAP for single patient
     explainer = _get_explainer(model, model_type, session.X_train)
@@ -266,7 +282,7 @@ def compute_waterfall(session: SessionState, model_id: str, patient_index: int) 
     for i, col in enumerate(feature_cols):
         if i < len(sv):
             display = _get_display_name(col, domain.feature_descriptions, session.column_mapping)
-            val = patient[0][i] if i < patient.shape[1] else 0
+            val = patient_raw[0][i] if i < patient_raw.shape[1] else 0
             # Format feature value nicely
             if isinstance(val, (float, np.floating)):
                 if val == int(val):
