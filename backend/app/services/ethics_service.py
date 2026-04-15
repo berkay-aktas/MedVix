@@ -62,19 +62,27 @@ def compute_bias_analysis(session: SessionState, model_id: str) -> BiasAnalysisR
     X_test = session.X_test
     y_test = session.y_test
 
+    # Inverse-transform to get original-scale values for subgroup splitting
+    if hasattr(session, "scaler") and session.scaler is not None:
+        X_test_raw = session.scaler.inverse_transform(X_test)
+    else:
+        X_test_raw = X_test
+
     # Overall metrics
     overall_acc, overall_sens, overall_spec = _compute_metrics_for_subset(model, X_test, y_test)
 
     subgroups: List[SubgroupMetrics] = []
     subgroup_config = domain.subgroup_columns or {}
 
-    # Sex-based subgroups
+    # Sex-based subgroups (use raw values for mask, normalized for prediction)
     sex_col = subgroup_config.get("sex_column")
     if sex_col and sex_col in feature_cols:
         sex_idx = feature_cols.index(sex_col)
         male_val = subgroup_config.get("sex_male_value", 1)
 
-        male_mask = X_test[:, sex_idx] == male_val
+        # Round raw values for binary columns
+        raw_sex = np.round(X_test_raw[:, sex_idx])
+        male_mask = raw_sex == male_val
         female_mask = ~male_mask
 
         for mask, name in [(male_mask, "Male"), (female_mask, "Female")]:
@@ -94,12 +102,13 @@ def compute_bias_analysis(session: SessionState, model_id: str) -> BiasAnalysisR
                     fairness_status=status,
                 ))
 
-    # Age-based subgroups
+    # Age-based subgroups (use raw values for mask)
     age_col = subgroup_config.get("age_column")
     age_threshold = subgroup_config.get("age_threshold", 60)
     if age_col and age_col in feature_cols:
         age_idx = feature_cols.index(age_col)
-        young_mask = X_test[:, age_idx] < age_threshold
+        raw_age = X_test_raw[:, age_idx]
+        young_mask = raw_age < age_threshold
         old_mask = ~young_mask
 
         for mask, name in [(young_mask, f"Age < {age_threshold}"), (old_mask, f"Age >= {age_threshold}")]:
@@ -172,11 +181,18 @@ def _compute_training_comparison(
     subgroup_config = domain.subgroup_columns or {}
     items: List[DataComparisonItem] = []
 
+    # Inverse-transform to get original-scale values
+    if hasattr(session, "scaler") and session.scaler is not None:
+        X_train_raw = session.scaler.inverse_transform(X_train)
+    else:
+        X_train_raw = X_train
+
     sex_col = subgroup_config.get("sex_column")
     if sex_col and sex_col in feature_cols:
         sex_idx = feature_cols.index(sex_col)
         male_val = subgroup_config.get("sex_male_value", 1)
-        male_pct = float(np.mean(X_train[:, sex_idx] == male_val)) * 100
+        raw_sex = np.round(X_train_raw[:, sex_idx])
+        male_pct = float(np.mean(raw_sex == male_val)) * 100
         female_pct = 100 - male_pct
 
         pop_male = pop_stats.get("male", 50) * 100 if pop_stats.get("male", 0) <= 1 else pop_stats.get("male", 50)
@@ -194,7 +210,8 @@ def _compute_training_comparison(
     age_threshold = subgroup_config.get("age_threshold", 60)
     if age_col and age_col in feature_cols:
         age_idx = feature_cols.index(age_col)
-        young_pct = float(np.mean(X_train[:, age_idx] < age_threshold)) * 100
+        raw_age_train = X_train_raw[:, age_idx]
+        young_pct = float(np.mean(raw_age_train < age_threshold)) * 100
         old_pct = 100 - young_pct
 
         pop_young = pop_stats.get("age_under_threshold", 0.55) * 100 if pop_stats.get("age_under_threshold", 0) <= 1 else pop_stats.get("age_under_threshold", 55)
@@ -643,15 +660,20 @@ def generate_certificate_pdf(
 
         if domain.sense_check_text:
             pdf.ln(1)
+            pdf.set_font("Helvetica", "I", 7.5)
+            pdf.set_text_color(*_C_TEXT)
+            # Calculate box height based on text
+            text = f"Clinical note: {domain.sense_check_text}"
+            text_w = pw - 12
+            n_lines = max(1, len(text) * pdf.get_string_width("a") / text_w + 1)
+            box_h = max(9, n_lines * 3.5 + 3)
             pdf.set_fill_color(*_C_SUCCESS_BG)
             pdf.set_draw_color(*_C_SUCCESS)
             box_y = pdf.get_y()
-            pdf.rect(10, box_y, pw, 9, "DF")
-            pdf.set_xy(14, box_y + 1)
-            pdf.set_font("Helvetica", "I", 7.5)
-            pdf.set_text_color(*_C_TEXT)
-            pdf.multi_cell(pw - 8, 3.5, f"Clinical note: {domain.sense_check_text[:150]}")
-            pdf.set_y(box_y + 11)
+            pdf.rect(10, box_y, pw, box_h, "DF")
+            pdf.set_xy(14, box_y + 1.5)
+            pdf.multi_cell(text_w, 3.5, text)
+            pdf.set_y(box_y + box_h + 2)
     except Exception:
         pdf.set_font("Helvetica", "I", 9)
         pdf.set_text_color(*_C_MUTED)

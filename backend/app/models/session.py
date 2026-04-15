@@ -46,6 +46,7 @@ class SessionState:
     model_objects: Optional[Dict[str, Any]] = field(
         default_factory=dict, repr=False
     )
+    scaler: Optional[Any] = field(default=None, repr=False)
 
     # Navigation
     current_step: int = 1

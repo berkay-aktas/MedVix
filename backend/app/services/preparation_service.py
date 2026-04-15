@@ -252,6 +252,7 @@ def prepare_data(
     session.X_test = X_test
     session.y_train = y_train
     session.y_test = y_test
+    session.scaler = scaler if config.normalisation != "none" else None
     session.is_prepared = True
     session.preparation_config = config.model_dump()
     session.current_step = 4
