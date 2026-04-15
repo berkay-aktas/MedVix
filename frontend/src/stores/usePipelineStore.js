@@ -16,6 +16,7 @@ const usePipelineStore = create((set, get) => ({
       step <= Math.max(...completedSteps, 0) + 1
     ) {
       set({ currentStep: step });
+      window.scrollTo({ top: 0 });
     }
   },
 
