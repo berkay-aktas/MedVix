@@ -314,6 +314,9 @@ def generate_certificate_pdf(
     pdf.set_text_color(*_C_DARK)
     pdf.cell(50, 7, model_name)
 
+    all_models = session.trained_models or {}
+    n_models = len(all_models)
+
     pdf.set_xy(150, card_y + 3)
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(*_C_MUTED)
@@ -323,10 +326,78 @@ def generate_certificate_pdf(
     pdf.set_text_color(*_C_DARK)
     pdf.cell(50, 7, datetime.now(timezone.utc).strftime("%d %b %Y"))
 
+    # Models evaluated count
+    if n_models > 1:
+        pdf.set_xy(150, card_y + 16)
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_text_color(*_C_MUTED)
+        pdf.cell(50, 5, f"MODELS EVALUATED", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_xy(150, card_y + 21)
+        pdf.set_font("Helvetica", "B", 14)
+        pdf.set_text_color(*_C_DARK)
+        pdf.cell(50, 7, str(n_models))
+
     pdf.set_y(card_y + 32)
 
-    # ── Section: Performance Metrics ──
-    _section_header(pdf, "Performance Metrics", pw)
+    # ── Section: Model Comparison (if multiple models) ──
+    if n_models > 1:
+        _section_header(pdf, "Model Comparison", pw)
+
+        key_metrics = ["accuracy", "sensitivity", "specificity", "f1", "auc_roc"]
+        # Header row
+        name_w = pw * 0.28
+        metric_w = (pw - name_w) / len(key_metrics)
+        pdf.set_fill_color(*_C_PRIMARY)
+        pdf.set_text_color(*_C_WHITE)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.cell(name_w, 7, "  Model", fill=True)
+        for km in key_metrics:
+            label = {"accuracy": "Acc", "sensitivity": "Sens", "specificity": "Spec", "f1": "F1", "auc_roc": "AUC"}[km]
+            pdf.cell(metric_w, 7, label, align="C", fill=True)
+        pdf.ln()
+
+        # Find best model by accuracy for highlighting
+        best_acc_id = max(all_models, key=lambda mid: next((m.get("value", 0) for m in all_models[mid].get("metrics", []) if m.get("name") == "accuracy"), 0))
+
+        row_alt = False
+        for mid, mdata in all_models.items():
+            mname = mdata.get("model_name", mdata.get("model_type", "?"))
+            is_active = mid == model_id
+            is_best = mid == best_acc_id
+
+            bg = (241, 245, 249) if row_alt else _C_WHITE
+            pdf.set_fill_color(*bg)
+
+            # Model name
+            pdf.set_font("Helvetica", "B" if is_active else "", 8)
+            pdf.set_text_color(*_C_DARK)
+            name_display = mname[:22]
+            if is_best:
+                name_display += " *"
+            pdf.cell(name_w, 6, f"  {name_display}", fill=True)
+
+            # Metrics
+            m_list = mdata.get("metrics", [])
+            for km in key_metrics:
+                val = next((m.get("value", 0) for m in m_list if m.get("name") == km), 0)
+                if val >= 0.8:
+                    pdf.set_text_color(*_C_SUCCESS)
+                elif val >= 0.6:
+                    pdf.set_text_color(*_C_WARNING)
+                else:
+                    pdf.set_text_color(*_C_DANGER)
+                pdf.set_font("Courier", "", 8)
+                pdf.cell(metric_w, 6, f"{val:.3f}", align="C", fill=True)
+            pdf.ln()
+            row_alt = not row_alt
+
+        pdf.set_text_color(*_C_MUTED)
+        pdf.set_font("Helvetica", "I", 7)
+        pdf.cell(0, 5, "  * Best performing model by accuracy. Active model shown in bold.", new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(3)
+
+    # ── Section: Active Model Metrics ──
+    _section_header(pdf, f"Detailed Metrics — {model_name}", pw)
 
     # Table header
     col_widths = [pw * 0.38, pw * 0.22, pw * 0.22, pw * 0.18]
@@ -335,7 +406,7 @@ def generate_certificate_pdf(
     pdf.set_font("Helvetica", "B", 9)
     headers = ["Metric", "Value", "Percentage", "Rating"]
     for i, h in enumerate(headers):
-        pdf.cell(col_widths[i], 8, f"  {h}", fill=True)
+        pdf.cell(col_widths[i], 7, f"  {h}", fill=True)
     pdf.ln()
 
     # Table rows
@@ -359,20 +430,19 @@ def generate_certificate_pdf(
         bg = (241, 245, 249) if row_alt else _C_WHITE
         pdf.set_fill_color(*bg)
         pdf.set_text_color(*_C_TEXT)
-        pdf.set_font("Helvetica", "", 10)
-        pdf.cell(col_widths[0], 7, f"  {label}", fill=True)
-        pdf.set_font("Courier", "", 10)
-        pdf.cell(col_widths[1], 7, f"  {val:.4f}", fill=True)
-        pdf.cell(col_widths[2], 7, f"  {pct}", fill=True)
-        # Rating cell with color
+        pdf.set_font("Helvetica", "", 9)
+        pdf.cell(col_widths[0], 6.5, f"  {label}", fill=True)
+        pdf.set_font("Courier", "", 9)
+        pdf.cell(col_widths[1], 6.5, f"  {val:.4f}", fill=True)
+        pdf.cell(col_widths[2], 6.5, f"  {pct}", fill=True)
         pdf.set_fill_color(*r_bg)
         pdf.set_text_color(*r_color)
-        pdf.set_font("Helvetica", "B", 9)
-        pdf.cell(col_widths[3], 7, f"  {rating}", fill=True)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.cell(col_widths[3], 6.5, f"  {rating}", fill=True)
         pdf.ln()
         row_alt = not row_alt
 
-    pdf.ln(4)
+    pdf.ln(3)
 
     # ── Section: Bias & Fairness ──
     _section_header(pdf, "Bias & Fairness Findings", pw)
