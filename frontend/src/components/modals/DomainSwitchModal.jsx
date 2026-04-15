@@ -6,6 +6,8 @@ import usePipelineStore from '../../stores/usePipelineStore';
 import useDataStore from '../../stores/useDataStore';
 import usePreparationStore from '../../stores/usePreparationStore';
 import useMLStore from '../../stores/useMLStore';
+import useExplainabilityStore from '../../stores/useExplainabilityStore';
+import useEthicsStore from '../../stores/useEthicsStore';
 import DOMAINS, { getDomainById } from '../../utils/domains';
 
 export default function DomainSwitchModal() {
@@ -16,6 +18,8 @@ export default function DomainSwitchModal() {
   const resetData = useDataStore((s) => s.resetData);
   const resetPreparation = usePreparationStore((s) => s.resetPreparation);
   const resetML = useMLStore((s) => s.resetML);
+  const resetExplainability = useExplainabilityStore((s) => s.resetExplainability);
+  const resetEthics = useEthicsStore((s) => s.resetEthics);
 
   const targetDomain = domainSwitchTarget
     ? getDomainById(domainSwitchTarget)
@@ -30,6 +34,8 @@ export default function DomainSwitchModal() {
       resetData();
       resetPreparation();
       resetML();
+      resetExplainability();
+      resetEthics();
 
       // Set new domain and go to step 1
       setDomain(domainSwitchTarget);
