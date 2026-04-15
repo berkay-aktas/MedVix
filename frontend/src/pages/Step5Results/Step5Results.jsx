@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BarChart3, ArrowLeft } from 'lucide-react';
 import Banner from '../../components/ui/Banner';
 import Button from '../../components/ui/Button';
@@ -16,6 +17,14 @@ export default function Step5Results() {
   const trainedModels = useMLStore((s) => s.trainedModels);
   const comparison = useMLStore((s) => s.comparison);
   const setStep = usePipelineStore((s) => s.setStep);
+  const completeStep = usePipelineStore((s) => s.completeStep);
+
+  // Mark step 5 complete when results are available
+  useEffect(() => {
+    if (activeModelResult) {
+      completeStep(5);
+    }
+  }, [activeModelResult, completeStep]);
 
   // No results yet
   if (!activeModelResult) {
