@@ -501,18 +501,141 @@ def generate_certificate_pdf(
 
         pdf.set_y(row_y + 7.5)
 
-    pdf.ln(2)
+    pdf.ln(3)
+
+    # ── Section: Dataset & Training Configuration ──
+    _section_header(pdf, "Dataset & Training Configuration", pw)
+
+    n_train = len(session.X_train) if session.X_train is not None else 0
+    n_test = len(session.X_test) if session.X_test is not None else 0
+    n_features = len(session.feature_columns) if session.feature_columns else 0
+    total = n_train + n_test
+    split_pct = f"{n_train / total * 100:.0f}/{n_test / total * 100:.0f}" if total > 0 else "N/A"
+
+    info_items = [
+        ("Dataset", domain.dataset_name),
+        ("Total Samples", str(total)),
+        ("Train / Test Split", f"{split_pct} ({n_train} / {n_test})"),
+        ("Features", str(n_features)),
+        ("Target Variable", session.target_column or domain.target_variable),
+        ("Problem Type", domain.problem_type.title()),
+    ]
+
+    col_left = pw * 0.35
+    col_right = pw * 0.65
+    for label, value in info_items:
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_text_color(*_C_MUTED)
+        pdf.cell(col_left, 5.5, f"  {label}")
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(*_C_DARK)
+        pdf.cell(col_right, 5.5, value, new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(3)
+
+    # ── Section: Top SHAP Features ──
+    _section_header(pdf, "Key Feature Insights (SHAP)", pw)
+
+    try:
+        from app.services.explainability_service import compute_feature_importance
+        importance_items, _ = compute_feature_importance(session)
+        top_features = importance_items[:5]
+
+        feat_cols = [pw * 0.08, pw * 0.45, pw * 0.25, pw * 0.22]
+        pdf.set_fill_color(*_C_PRIMARY)
+        pdf.set_text_color(*_C_WHITE)
+        pdf.set_font("Helvetica", "B", 8)
+        for i, h in enumerate(["#", "Feature", "SHAP Value", "Importance"]):
+            pdf.cell(feat_cols[i], 6, f"  {h}", fill=True)
+        pdf.ln()
+
+        for rank, feat in enumerate(top_features, 1):
+            bg = (241, 245, 249) if rank % 2 == 0 else _C_WHITE
+            pdf.set_fill_color(*bg)
+            pdf.set_text_color(*_C_TEXT)
+            pdf.set_font("Helvetica", "B", 8.5)
+            pdf.cell(feat_cols[0], 6, f"  {rank}", fill=True)
+            pdf.set_font("Helvetica", "", 8.5)
+            pdf.cell(feat_cols[1], 6, f"  {feat.display_name}", fill=True)
+            pdf.set_font("Courier", "", 8.5)
+            pdf.cell(feat_cols[2], 6, f"  {feat.importance:.3f}", fill=True)
+            # Visual bar
+            bar_max = feat_cols[3] - 4
+            bar_w = feat.importance * bar_max
+            bar_y = pdf.get_y()
+            bar_x = pdf.get_x() + 2
+            pdf.set_fill_color(*bg)
+            pdf.cell(feat_cols[3], 6, "", fill=True)
+            pdf.set_fill_color(*_C_PRIMARY)
+            if bar_w > 0:
+                pdf.rect(bar_x, bar_y + 1.5, bar_w, 3, "F")
+            pdf.ln()
+
+        if domain.sense_check_text:
+            pdf.ln(1)
+            pdf.set_fill_color(*_C_SUCCESS_BG)
+            pdf.set_draw_color(*_C_SUCCESS)
+            box_y = pdf.get_y()
+            pdf.rect(10, box_y, pw, 9, "DF")
+            pdf.set_xy(14, box_y + 1)
+            pdf.set_font("Helvetica", "I", 7.5)
+            pdf.set_text_color(*_C_TEXT)
+            pdf.multi_cell(pw - 8, 3.5, f"Clinical note: {domain.sense_check_text[:150]}")
+            pdf.set_y(box_y + 11)
+    except Exception:
+        pdf.set_font("Helvetica", "I", 9)
+        pdf.set_text_color(*_C_MUTED)
+        pdf.cell(0, 6, "SHAP analysis not available for this certificate.", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.ln(3)
+
+    # ── Section: Overall Assessment ──
+    _section_header(pdf, "Overall Assessment", pw)
+
+    # Build assessment text
+    acc_val = next((m.get("value", 0) for m in metrics if m.get("name") == "accuracy"), 0)
+    auc_val = next((m.get("value", 0) for m in metrics if m.get("name") == "auc_roc"), 0)
+
+    if acc_val >= 0.8:
+        perf_verdict = "demonstrates strong predictive performance"
+    elif acc_val >= 0.6:
+        perf_verdict = "shows moderate predictive performance"
+    else:
+        perf_verdict = "shows limited predictive performance and may require further tuning"
+
+    try:
+        bias_res = compute_bias_analysis(session, model_id)
+        if bias_res.bias_detected:
+            bias_verdict = f"Fairness analysis identified disparities in {bias_res.bias_message.split('for ')[-1].split('.')[0]} that should be addressed before deployment."
+        else:
+            bias_verdict = "No significant fairness disparities were detected across evaluated subgroups."
+    except Exception:
+        bias_verdict = "Fairness analysis was not available."
+
+    compliance_verdict = f"{checked_count} of 8 EU AI Act requirements are currently met."
+
+    assessment = (
+        f"The {model_name} model applied to {domain.name} {perf_verdict} "
+        f"with {acc_val:.1%} accuracy and {auc_val:.3f} AUC-ROC. "
+        f"{bias_verdict} {compliance_verdict}"
+    )
+
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*_C_TEXT)
+    pdf.multi_cell(pw, 4.5, assessment)
+
+    pdf.ln(4)
 
     # ── Footer ──
     pdf.set_draw_color(*_C_BORDER)
     pdf.set_line_width(0.3)
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(3)
-    pdf.set_font("Helvetica", "I", 8)
+    pdf.ln(2)
+    pdf.set_font("Helvetica", "I", 7.5)
     pdf.set_text_color(*_C_LIGHT_MUTED)
-    pdf.cell(0, 5, "This certificate summarises model evaluation findings and does not constitute clinical validation or regulatory approval.", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 4, "This certificate summarises model evaluation findings and does not constitute clinical validation or regulatory approval.", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 7)
-    pdf.cell(0, 5, f"Generated by MedVix | {datetime.now(timezone.utc).strftime('%d %B %Y, %H:%M UTC')}", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 4, f"Generated by MedVix | {datetime.now(timezone.utc).strftime('%d %B %Y, %H:%M UTC')}", align="C", new_x="LMARGIN", new_y="NEXT")
 
     return pdf.output()
 
