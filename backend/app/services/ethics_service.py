@@ -556,42 +556,23 @@ def generate_certificate_pdf(
     pdf.cell(50, 6, "requirements met")
     pdf.set_y(badge_y + 12)
 
-    # Checklist as compact rows
+    # Checklist as simple text rows (no shapes to avoid page break issues)
     for item in EU_AI_ACT_ITEMS:
         is_pass = checklist_status.get(item.id, item.pre_checked)
-        row_y = pdf.get_y()
-
-        # Row background
         if is_pass:
-            pdf.set_fill_color(*_C_SUCCESS_BG)
+            pdf.set_text_color(*_C_SUCCESS)
+            marker = "PASS"
         else:
-            pdf.set_fill_color(255, 255, 255)
-        pdf.rect(10, row_y, pw, 7, "F")
-
-        # Status indicator
-        if is_pass:
-            pdf.set_fill_color(*_C_SUCCESS)
-        else:
-            pdf.set_fill_color(*_C_DANGER)
-        pdf.ellipse(13, row_y + 1.5, 4, 4, "F")
-        pdf.set_text_color(*_C_WHITE)
-        pdf.set_font("Courier", "B", 6)
-        pdf.set_xy(13.2, row_y + 1.2)
-        pdf.cell(3.6, 4, "+" if is_pass else "-", align="C")
-
-        # Title
-        pdf.set_xy(20, row_y + 0.5)
+            pdf.set_text_color(*_C_DANGER)
+            marker = "FAIL"
+        pdf.set_font("Courier", "B", 8)
+        pdf.cell(14, 5.5, f" {marker}", new_x="END")
         pdf.set_font("Helvetica", "B", 8.5)
         pdf.set_text_color(*_C_DARK)
-        pdf.cell(80, 6, item.title)
-
-        # Description
-        pdf.set_xy(100, row_y + 0.5)
+        pdf.cell(72, 5.5, f" {item.title}", new_x="END")
         pdf.set_font("Helvetica", "", 7.5)
         pdf.set_text_color(*_C_MUTED)
-        pdf.cell(pw - 90, 6, item.description[:60])
-
-        pdf.set_y(row_y + 7.5)
+        pdf.cell(pw - 86, 5.5, _safe_pdf_text(item.description[:58]), new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(3)
 
@@ -667,18 +648,8 @@ def generate_certificate_pdf(
             pdf.ln(1)
             pdf.set_font("Helvetica", "I", 7.5)
             pdf.set_text_color(*_C_TEXT)
-            # Calculate box height based on text
             text = _safe_pdf_text(f"Clinical note: {domain.sense_check_text}")
-            text_w = pw - 12
-            n_lines = max(1, len(text) * pdf.get_string_width("a") / text_w + 1)
-            box_h = max(9, n_lines * 3.5 + 3)
-            pdf.set_fill_color(*_C_SUCCESS_BG)
-            pdf.set_draw_color(*_C_SUCCESS)
-            box_y = pdf.get_y()
-            pdf.rect(10, box_y, pw, box_h, "DF")
-            pdf.set_xy(14, box_y + 1.5)
-            pdf.multi_cell(text_w, 3.5, text)
-            pdf.set_y(box_y + box_h + 2)
+            pdf.multi_cell(pw, 3.5, text)
     except Exception:
         pdf.set_font("Helvetica", "I", 9)
         pdf.set_text_color(*_C_MUTED)
