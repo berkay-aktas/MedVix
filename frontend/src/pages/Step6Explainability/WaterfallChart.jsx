@@ -21,11 +21,11 @@ export default function WaterfallChart({ data, isLoading }) {
   const { bars, base_probability, final_probability, prediction_label, prediction_class, summary_text } = data;
 
   // SVG layout constants
-  const svgWidth = 520;
-  const barAreaStart = 180;
-  const barAreaWidth = 240;
-  const effectX = 450;
-  const rowHeight = 38;
+  const svgWidth = 500;
+  const barAreaStart = 170;
+  const barAreaWidth = 230;
+  const effectX = 430;
+  const rowHeight = 42;
   const svgHeight = bars.length * rowHeight + 10;
 
   // Compute range for scaling
@@ -75,12 +75,12 @@ export default function WaterfallChart({ data, isLoading }) {
 
           return (
             <g key={bar.feature_name}>
-              {/* Feature label (truncated to fit) */}
-              <text x="0" y={y + 14} fontFamily="Inter,sans-serif" fontSize="11" fill="#334155">
-                {bar.display_name.length > 28 ? bar.display_name.slice(0, 26) + '...' : bar.display_name}
+              {/* Feature label */}
+              <text x="0" y={y + 15} fontFamily="Inter,sans-serif" fontSize="12" fill="#334155" fontWeight="500">
+                {bar.display_name}
               </text>
-              <text x="0" y={y + 25} fontFamily="JetBrains Mono,monospace" fontSize="9" fill="#64748B">
-                = {bar.feature_value}
+              <text x="0" y={y + 28} fontFamily="JetBrains Mono,monospace" fontSize="10" fill="#94A3B8">
+                {bar.feature_value}
               </text>
 
               {/* Bar */}

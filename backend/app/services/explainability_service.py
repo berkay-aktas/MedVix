@@ -52,16 +52,31 @@ def _get_explainer(model: Any, model_type: str, X_background: np.ndarray):
 
 def _get_display_name(col_name: str, feature_descriptions: Dict[str, str], column_mapping: Optional[Dict[str, str]]) -> str:
     """Resolve a column name to its clinical display name."""
+    name = None
     # Try direct match in feature_descriptions
     if col_name in feature_descriptions:
-        return feature_descriptions[col_name]
+        name = feature_descriptions[col_name]
     # Try via column_mapping (user may have mapped columns in Step 2)
-    if column_mapping:
+    if name is None and column_mapping:
         for mapped, original in column_mapping.items():
             if mapped == col_name and original in feature_descriptions:
-                return feature_descriptions[original]
+                name = feature_descriptions[original]
     # Fallback: title-case the column name
-    return col_name.replace("_", " ").title()
+    if name is None:
+        name = col_name.replace("_", " ").title()
+    return name
+
+
+def _get_short_name(col_name: str, feature_descriptions: Dict[str, str], column_mapping: Optional[Dict[str, str]]) -> str:
+    """Get a short clinical label suitable for chart axes (max ~30 chars)."""
+    import re
+    full = _get_display_name(col_name, feature_descriptions, column_mapping)
+    # Strip parenthetical content like "(0 = normal, 1 = ...)"
+    short = re.sub(r'\s*\(.*?\)', '', full).strip()
+    # Truncate at 30 chars on word boundary
+    if len(short) > 30:
+        short = short[:28].rsplit(' ', 1)[0] + '...'
+    return short
 
 
 def _rebuild_model(session: SessionState, model_id: str, model_data: dict) -> Any:
@@ -281,14 +296,16 @@ def compute_waterfall(session: SessionState, model_id: str, patient_index: int) 
     bars = []
     for i, col in enumerate(feature_cols):
         if i < len(sv):
-            display = _get_display_name(col, domain.feature_descriptions, session.column_mapping)
+            display = _get_short_name(col, domain.feature_descriptions, session.column_mapping)
             val = patient_raw[0][i] if i < patient_raw.shape[1] else 0
             # Format feature value nicely
             if isinstance(val, (float, np.floating)):
-                if val == int(val):
+                if abs(val) >= 100:
+                    val_str = str(int(round(val)))
+                elif val == int(val):
                     val_str = str(int(val))
                 else:
-                    val_str = f"{val:.2f}"
+                    val_str = f"{val:.1f}"
             else:
                 val_str = str(val)
 
@@ -301,7 +318,7 @@ def compute_waterfall(session: SessionState, model_id: str, patient_index: int) 
             ))
 
     bars.sort(key=lambda x: abs(x.shap_value), reverse=True)
-    bars = bars[:8]  # Top 8 features
+    bars = bars[:6]  # Top 6 features for readability
 
     # Determine prediction label
     pred_label = "High Risk" if final_prob >= 0.5 else "Low Risk"
