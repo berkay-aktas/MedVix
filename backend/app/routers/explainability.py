@@ -38,7 +38,7 @@ async def feature_importance(request: ExplainabilityRequest) -> ExplainabilityRe
         raise HTTPException(status_code=404, detail="Session not found.")
 
     try:
-        items, patients = compute_feature_importance(session)
+        items, patients = compute_feature_importance(session, request.model_id)
         domain = get_domain_detail(session.domain_id)
         return ExplainabilityResponse(
             feature_importance=items,

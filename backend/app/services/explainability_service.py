@@ -27,10 +27,22 @@ _LINEAR_MODELS = {"logistic_regression"}
 def _get_explainer(model: Any, model_type: str, X_background: np.ndarray):
     """Select appropriate SHAP explainer based on model type."""
     if model_type in _TREE_MODELS:
-        return shap.TreeExplainer(model)
+        try:
+            return shap.TreeExplainer(model)
+        except (ValueError, TypeError, Exception) as exc:
+            # shap 0.46 + xgboost 2.x incompatibility — fall back
+            logger.warning("TreeExplainer failed for %s (%s), falling back to KernelExplainer", model_type, exc)
+            background = shap.sample(X_background, min(50, len(X_background)))
+            predict_fn = model.predict_proba if hasattr(model, "predict_proba") else model.predict
+            return shap.KernelExplainer(predict_fn, background)
     elif model_type in _LINEAR_MODELS:
-        masker = shap.maskers.Independent(X_background[:100])
-        return shap.LinearExplainer(model, masker)
+        try:
+            masker = shap.maskers.Independent(X_background[:100])
+            return shap.LinearExplainer(model, masker)
+        except Exception:
+            background = shap.sample(X_background, min(50, len(X_background)))
+            predict_fn = model.predict_proba if hasattr(model, "predict_proba") else model.predict
+            return shap.KernelExplainer(predict_fn, background)
     else:
         # KernelExplainer for KNN, SVM, Naive Bayes
         background = shap.sample(X_background, min(50, len(X_background)))
@@ -77,13 +89,16 @@ def _rebuild_model(session: SessionState, model_id: str, model_data: dict) -> An
     raise ValueError(f"Failed to rebuild model {model_type}.")
 
 
-def compute_feature_importance(session: SessionState) -> Tuple[List[FeatureImportanceItem], List[PatientOption]]:
+def compute_feature_importance(session: SessionState, requested_model_id: Optional[str] = None) -> Tuple[List[FeatureImportanceItem], List[PatientOption]]:
     """Compute global SHAP feature importance for the active model."""
-    # Find the most recently trained model
     if not session.trained_models:
         raise ValueError("No trained models found. Complete Step 4 first.")
 
-    model_id = list(session.trained_models.keys())[-1]
+    # Use requested model or fall back to the most recent
+    if requested_model_id and requested_model_id in session.trained_models:
+        model_id = requested_model_id
+    else:
+        model_id = list(session.trained_models.keys())[-1]
     model_data = session.trained_models[model_id]
     model_type = model_data["model_type"]
 
