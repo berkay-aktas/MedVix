@@ -231,12 +231,30 @@ def get_checklist_items() -> List[ChecklistItemDef]:
 
 # --- PDF Certificate Generation ---
 
+# Color constants (R, G, B)
+_C_PRIMARY = (5, 150, 105)
+_C_PRIMARY_LT = (16, 185, 129)
+_C_DARK = (30, 41, 59)
+_C_TEXT = (51, 65, 85)
+_C_MUTED = (100, 116, 139)
+_C_LIGHT_MUTED = (148, 163, 184)
+_C_BG = (248, 250, 252)
+_C_BORDER = (226, 232, 240)
+_C_SUCCESS = (22, 163, 74)
+_C_WARNING = (217, 119, 6)
+_C_DANGER = (220, 38, 38)
+_C_WHITE = (255, 255, 255)
+_C_SUCCESS_BG = (240, 253, 244)
+_C_DANGER_BG = (254, 242, 242)
+_C_WARNING_BG = (255, 251, 235)
+
+
 def generate_certificate_pdf(
     session: SessionState,
     model_id: str,
     checklist_status: Dict[str, bool],
 ) -> bytes:
-    """Generate a PDF assessment certificate."""
+    """Generate a professionally styled PDF assessment certificate."""
     from fpdf import FPDF
 
     if model_id not in session.trained_models:
@@ -245,117 +263,278 @@ def generate_certificate_pdf(
     model_data = session.trained_models[model_id]
     domain = get_domain_detail(session.domain_id)
     metrics = model_data.get("metrics", [])
+    model_name = model_data.get("model_name", model_data.get("model_type", "Unknown"))
+    checked_count = sum(1 for v in checklist_status.values() if v)
 
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
+    pw = pdf.w - 20  # page width minus margins
 
-    # Header
-    pdf.set_font("Helvetica", "B", 22)
-    pdf.set_text_color(5, 150, 105)
-    pdf.cell(0, 12, "MedVix", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", "", 11)
-    pdf.set_text_color(100, 116, 139)
-    pdf.cell(0, 6, "ML Visualization Tool for Healthcare", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(4)
+    # ── Header banner ──
+    pdf.set_fill_color(*_C_PRIMARY)
+    pdf.rect(0, 0, 210, 38, "F")
+    # Accent stripe
+    pdf.set_fill_color(*_C_PRIMARY_LT)
+    pdf.rect(0, 38, 210, 2, "F")
 
-    # Title
-    pdf.set_font("Helvetica", "B", 16)
-    pdf.set_text_color(30, 41, 59)
-    pdf.cell(0, 10, "Assessment Certificate", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_draw_color(5, 150, 105)
-    pdf.set_line_width(0.5)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(6)
-
-    # Domain & Model info
-    pdf.set_font("Helvetica", "", 11)
-    pdf.set_text_color(51, 65, 85)
-    pdf.cell(0, 7, f"Clinical Domain: {domain.name}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 7, f"Model: {model_data.get('model_name', model_data.get('model_type', 'Unknown'))}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 7, f"Date: {datetime.now(timezone.utc).strftime('%d %B %Y, %H:%M UTC')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(4)
-
-    # Metrics table
-    pdf.set_font("Helvetica", "B", 13)
-    pdf.set_text_color(30, 41, 59)
-    pdf.cell(0, 8, "Performance Metrics", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(2)
-
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.set_fill_color(248, 250, 252)
-    pdf.set_text_color(100, 116, 139)
-    col_w = 63
-    pdf.cell(col_w, 8, "Metric", border=1, fill=True)
-    pdf.cell(col_w, 8, "Value", border=1, fill=True)
-    pdf.cell(col_w, 8, "Rating", border=1, fill=True, new_x="LMARGIN", new_y="NEXT")
-
+    pdf.set_y(8)
+    pdf.set_font("Helvetica", "B", 24)
+    pdf.set_text_color(*_C_WHITE)
+    pdf.cell(0, 10, "MedVix", align="C", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(51, 65, 85)
+    pdf.set_text_color(236, 253, 245)
+    pdf.cell(0, 6, "ML Visualization Tool for Healthcare", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 9)
+    pdf.cell(0, 6, "Assessment Certificate", align="C", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.set_y(46)
+
+    # ── Domain info card ──
+    pdf.set_fill_color(*_C_BG)
+    pdf.set_draw_color(*_C_BORDER)
+    card_y = pdf.get_y()
+    pdf.rect(10, card_y, pw, 28, "DF")
+
+    pdf.set_xy(14, card_y + 3)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*_C_MUTED)
+    pdf.cell(60, 5, "CLINICAL DOMAIN", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_x(14)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(*_C_DARK)
+    pdf.cell(60, 7, domain.name)
+
+    pdf.set_xy(85, card_y + 3)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*_C_MUTED)
+    pdf.cell(50, 5, "MODEL", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_xy(85, card_y + 8)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(*_C_DARK)
+    pdf.cell(50, 7, model_name)
+
+    pdf.set_xy(150, card_y + 3)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*_C_MUTED)
+    pdf.cell(50, 5, "DATE", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_xy(150, card_y + 8)
+    pdf.set_font("Helvetica", "", 11)
+    pdf.set_text_color(*_C_DARK)
+    pdf.cell(50, 7, datetime.now(timezone.utc).strftime("%d %b %Y"))
+
+    pdf.set_y(card_y + 32)
+
+    # ── Section: Performance Metrics ──
+    _section_header(pdf, "Performance Metrics", pw)
+
+    # Table header
+    col_widths = [pw * 0.38, pw * 0.22, pw * 0.22, pw * 0.18]
+    pdf.set_fill_color(*_C_PRIMARY)
+    pdf.set_text_color(*_C_WHITE)
+    pdf.set_font("Helvetica", "B", 9)
+    headers = ["Metric", "Value", "Percentage", "Rating"]
+    for i, h in enumerate(headers):
+        pdf.cell(col_widths[i], 8, f"  {h}", fill=True)
+    pdf.ln()
+
+    # Table rows
     priority_metrics = ["accuracy", "sensitivity", "specificity", "precision", "f1", "auc_roc"]
+    row_alt = False
     for m in metrics:
         m_name = m.get("name", "")
-        if m_name in priority_metrics:
-            val = m.get("value", 0)
-            label = m.get("label", m_name.replace("_", " ").title())
-            rating = "Good" if val >= 0.8 else ("Fair" if val >= 0.6 else "Poor")
-            pdf.cell(col_w, 7, label, border=1)
-            pdf.cell(col_w, 7, f"{val:.4f}", border=1)
-            pdf.cell(col_w, 7, rating, border=1, new_x="LMARGIN", new_y="NEXT")
+        if m_name not in priority_metrics:
+            continue
+        val = m.get("value", 0)
+        label = m.get("label", m_name.replace("_", " ").title())
+        pct = f"{val * 100:.1f}%"
+
+        if val >= 0.8:
+            rating, r_color, r_bg = "Good", _C_SUCCESS, _C_SUCCESS_BG
+        elif val >= 0.6:
+            rating, r_color, r_bg = "Fair", _C_WARNING, _C_WARNING_BG
+        else:
+            rating, r_color, r_bg = "Poor", _C_DANGER, _C_DANGER_BG
+
+        bg = (241, 245, 249) if row_alt else _C_WHITE
+        pdf.set_fill_color(*bg)
+        pdf.set_text_color(*_C_TEXT)
+        pdf.set_font("Helvetica", "", 10)
+        pdf.cell(col_widths[0], 7, f"  {label}", fill=True)
+        pdf.set_font("Courier", "", 10)
+        pdf.cell(col_widths[1], 7, f"  {val:.4f}", fill=True)
+        pdf.cell(col_widths[2], 7, f"  {pct}", fill=True)
+        # Rating cell with color
+        pdf.set_fill_color(*r_bg)
+        pdf.set_text_color(*r_color)
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.cell(col_widths[3], 7, f"  {rating}", fill=True)
+        pdf.ln()
+        row_alt = not row_alt
 
     pdf.ln(4)
 
-    # Bias findings
-    pdf.set_font("Helvetica", "B", 13)
-    pdf.set_text_color(30, 41, 59)
-    pdf.cell(0, 8, "Bias & Fairness Findings", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(2)
+    # ── Section: Bias & Fairness ──
+    _section_header(pdf, "Bias & Fairness Findings", pw)
 
-    # Run bias analysis to get findings
     try:
         bias_result = compute_bias_analysis(session, model_id)
-        pdf.set_font("Helvetica", "", 10)
         if bias_result.bias_detected:
-            pdf.set_text_color(220, 38, 38)
-            pdf.cell(0, 7, f"BIAS DETECTED: {bias_result.bias_message}", new_x="LMARGIN", new_y="NEXT")
+            # Red alert box
+            pdf.set_fill_color(*_C_DANGER_BG)
+            pdf.set_draw_color(*_C_DANGER)
+            box_y = pdf.get_y()
+            pdf.rect(10, box_y, pw, 10, "DF")
+            pdf.set_xy(14, box_y + 2)
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.set_text_color(*_C_DANGER)
+            pdf.cell(0, 6, f"BIAS DETECTED: {bias_result.bias_message}")
+            pdf.set_y(box_y + 12)
         else:
-            pdf.set_text_color(5, 150, 105)
-            pdf.cell(0, 7, "No significant bias detected across patient subgroups.", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_fill_color(*_C_SUCCESS_BG)
+            pdf.set_draw_color(*_C_SUCCESS)
+            box_y = pdf.get_y()
+            pdf.rect(10, box_y, pw, 10, "DF")
+            pdf.set_xy(14, box_y + 2)
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.set_text_color(*_C_SUCCESS)
+            pdf.cell(0, 6, "No significant bias detected across patient subgroups.")
+            pdf.set_y(box_y + 12)
 
-        pdf.set_text_color(51, 65, 85)
-        for sg in bias_result.subgroups:
-            pdf.cell(0, 6, f"  {sg.subgroup_name}: Sensitivity={sg.sensitivity:.1%}, Disparity={sg.disparity_pp:+.1f}pp [{sg.fairness_status}]", new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(1)
+
+        # Subgroup mini-table
+        if bias_result.subgroups:
+            sg_cols = [pw * 0.30, pw * 0.12, pw * 0.20, pw * 0.20, pw * 0.18]
+            pdf.set_fill_color(*_C_BG)
+            pdf.set_text_color(*_C_MUTED)
+            pdf.set_font("Helvetica", "B", 8)
+            for i, h in enumerate(["Subgroup", "N", "Sensitivity", "Disparity", "Status"]):
+                pdf.cell(sg_cols[i], 6, f"  {h}", fill=True)
+            pdf.ln()
+
+            pdf.set_font("Helvetica", "", 9)
+            for sg in bias_result.subgroups:
+                pdf.set_text_color(*_C_TEXT)
+                pdf.cell(sg_cols[0], 6, f"  {sg.subgroup_name}")
+                pdf.set_font("Courier", "", 9)
+                pdf.cell(sg_cols[1], 6, f"  {sg.n}")
+                pdf.cell(sg_cols[2], 6, f"  {sg.sensitivity:.1%}")
+                pdf.cell(sg_cols[3], 6, f"  {sg.disparity_pp:+.1f}pp")
+                # Status badge
+                if sg.fairness_status == "OK":
+                    pdf.set_text_color(*_C_SUCCESS)
+                elif sg.fairness_status == "Review":
+                    pdf.set_text_color(*_C_WARNING)
+                else:
+                    pdf.set_text_color(*_C_DANGER)
+                pdf.set_font("Helvetica", "B", 9)
+                pdf.cell(sg_cols[4], 6, f"  {sg.fairness_status}")
+                pdf.ln()
+                pdf.set_font("Helvetica", "", 9)
     except Exception:
-        pdf.set_font("Helvetica", "", 10)
-        pdf.set_text_color(100, 116, 139)
+        pdf.set_font("Helvetica", "I", 10)
+        pdf.set_text_color(*_C_MUTED)
         pdf.cell(0, 7, "Bias analysis not available.", new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(4)
 
-    # EU AI Act Checklist
-    pdf.set_font("Helvetica", "B", 13)
-    pdf.set_text_color(30, 41, 59)
-    pdf.cell(0, 8, "EU AI Act Compliance", new_x="LMARGIN", new_y="NEXT")
+    # ── Section: EU AI Act Compliance ──
+    _section_header(pdf, "EU AI Act Compliance", pw)
+
+    # Score badge
+    if checked_count >= 6:
+        badge_color, badge_bg = _C_SUCCESS, _C_SUCCESS_BG
+    elif checked_count >= 4:
+        badge_color, badge_bg = _C_WARNING, _C_WARNING_BG
+    else:
+        badge_color, badge_bg = _C_DANGER, _C_DANGER_BG
+
+    pdf.set_fill_color(*badge_bg)
+    pdf.set_draw_color(*badge_color)
+    badge_y = pdf.get_y()
+    pdf.rect(10, badge_y, 40, 9, "DF")
+    pdf.set_xy(12, badge_y + 1.5)
+    pdf.set_font("Courier", "B", 12)
+    pdf.set_text_color(*badge_color)
+    pdf.cell(36, 6, f"{checked_count} / 8", align="C")
+    pdf.set_xy(54, badge_y + 2)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(*_C_MUTED)
+    pdf.cell(50, 6, "requirements met")
+    pdf.set_y(badge_y + 12)
+
+    # Checklist grid (2 columns)
+    col_w_half = pw / 2 - 1
+    items_list = list(EU_AI_ACT_ITEMS)
+    for row_idx in range(0, len(items_list), 2):
+        for col_idx in range(2):
+            if row_idx + col_idx >= len(items_list):
+                break
+            item = items_list[row_idx + col_idx]
+            is_pass = checklist_status.get(item.id, item.pre_checked)
+            x_start = 10 + col_idx * (col_w_half + 2)
+
+            if is_pass:
+                pdf.set_fill_color(*_C_SUCCESS_BG)
+                pdf.set_draw_color(167, 243, 208)
+            else:
+                pdf.set_fill_color(*_C_DANGER_BG)
+                pdf.set_draw_color(254, 202, 202)
+
+            item_y = pdf.get_y()
+            pdf.rect(x_start, item_y, col_w_half, 12, "DF")
+
+            # Icon circle
+            cx = x_start + 7
+            cy = item_y + 6
+            if is_pass:
+                pdf.set_fill_color(*_C_SUCCESS)
+            else:
+                pdf.set_fill_color(*_C_DANGER)
+            pdf.ellipse(cx - 3.5, cy - 3.5, 7, 7, "F")
+
+            # Icon symbol
+            pdf.set_text_color(*_C_WHITE)
+            pdf.set_font("Courier", "B", 8)
+            pdf.set_xy(cx - 2, cy - 2.5)
+            pdf.cell(4, 5, "+" if is_pass else "x", align="C")
+
+            # Title
+            pdf.set_xy(x_start + 14, item_y + 1)
+            pdf.set_font("Helvetica", "B", 8.5)
+            pdf.set_text_color(*_C_DARK)
+            pdf.cell(col_w_half - 16, 4, item.title)
+            pdf.set_xy(x_start + 14, item_y + 5.5)
+            pdf.set_font("Helvetica", "", 7)
+            pdf.set_text_color(*_C_MUTED)
+            pdf.cell(col_w_half - 16, 4, item.description[:55])
+
+        pdf.set_y(pdf.get_y() + 14)
+
     pdf.ln(2)
 
-    checked_count = sum(1 for v in checklist_status.values() if v)
-    pdf.set_font("Helvetica", "B", 11)
-    pdf.set_text_color(5, 150, 105) if checked_count >= 6 else pdf.set_text_color(217, 119, 6)
-    pdf.cell(0, 7, f"{checked_count}/8 requirements met", new_x="LMARGIN", new_y="NEXT")
-
-    pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(51, 65, 85)
-    for item in EU_AI_ACT_ITEMS:
-        status = "PASS" if checklist_status.get(item.id, item.pre_checked) else "FAIL"
-        marker = "[x]" if status == "PASS" else "[ ]"
-        pdf.cell(0, 6, f"  {marker} {item.title}", new_x="LMARGIN", new_y="NEXT")
-
-    pdf.ln(6)
-
-    # Footer
-    pdf.set_font("Helvetica", "I", 9)
-    pdf.set_text_color(148, 163, 184)
-    pdf.cell(0, 6, "This certificate is generated for educational purposes only.", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, "It does not constitute clinical validation or regulatory approval.", new_x="LMARGIN", new_y="NEXT")
+    # ── Footer ──
+    pdf.set_draw_color(*_C_BORDER)
+    pdf.set_line_width(0.3)
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(*_C_LIGHT_MUTED)
+    pdf.cell(0, 5, "This certificate is generated for educational purposes only. It does not constitute clinical validation or regulatory approval.", align="C", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", "", 7)
+    pdf.cell(0, 5, f"MedVix | SENG 430 Software Quality Assurance | Cankaya University | {datetime.now(timezone.utc).strftime('%d %B %Y')}", align="C", new_x="LMARGIN", new_y="NEXT")
 
     return pdf.output()
+
+
+def _section_header(pdf, title: str, pw: float) -> None:
+    """Draw a styled section header with left accent bar."""
+    pdf.set_fill_color(*_C_PRIMARY)
+    y = pdf.get_y()
+    pdf.rect(10, y, 3, 8, "F")
+    pdf.set_xy(16, y)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.set_text_color(*_C_DARK)
+    pdf.cell(0, 8, title)
+    pdf.set_y(y + 10)
