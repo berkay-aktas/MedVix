@@ -10,8 +10,12 @@ import Step2DataExploration from './pages/Step2DataExploration/Step2DataExplorat
 import Step3DataPreparation from './pages/Step3DataPreparation/Step3DataPreparation';
 import Step4ModelParameters from './pages/Step4ModelParameters/Step4ModelParameters';
 import Step5Results from './pages/Step5Results/Step5Results';
+import Step6Explainability from './pages/Step6Explainability/Step6Explainability';
+import Step7EthicsBias from './pages/Step7EthicsBias/Step7EthicsBias';
 import usePipelineStore from './stores/usePipelineStore';
 import useDataStore from './stores/useDataStore';
+import useExplainabilityStore from './stores/useExplainabilityStore';
+import useEthicsStore from './stores/useEthicsStore';
 import Card from './components/ui/Card';
 import api from './utils/api';
 
@@ -48,9 +52,9 @@ function CurrentStep() {
     case 5:
       return <Step5Results />;
     case 6:
-      return <PlaceholderStep step={6} sprint={4} />;
+      return <Step6Explainability />;
     case 7:
-      return <PlaceholderStep step={7} sprint={4} />;
+      return <Step7EthicsBias />;
     default:
       return <Step1ClinicalContext />;
   }
