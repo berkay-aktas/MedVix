@@ -254,6 +254,11 @@ _C_PRIMARY_LT = (16, 185, 129)
 _C_DARK = (30, 41, 59)
 _C_TEXT = (51, 65, 85)
 _C_MUTED = (100, 116, 139)
+
+
+def _safe_pdf_text(text: str) -> str:
+    """Replace non-latin-1 characters for fpdf2 Helvetica compatibility."""
+    return text.encode("latin-1", errors="replace").decode("latin-1")
 _C_LIGHT_MUTED = (148, 163, 184)
 _C_BG = (248, 250, 252)
 _C_BORDER = (226, 232, 240)
@@ -320,7 +325,7 @@ def generate_certificate_pdf(
     pdf.set_x(14)
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(*_C_DARK)
-    pdf.cell(60, 7, domain.name)
+    pdf.cell(60, 7, _safe_pdf_text(domain.name))
 
     pdf.set_xy(85, card_y + 3)
     pdf.set_font("Helvetica", "B", 10)
@@ -329,7 +334,7 @@ def generate_certificate_pdf(
     pdf.set_xy(85, card_y + 8)
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(*_C_DARK)
-    pdf.cell(50, 7, model_name)
+    pdf.cell(50, 7, _safe_pdf_text(model_name))
 
     all_models = session.trained_models or {}
     n_models = len(all_models)
@@ -414,7 +419,7 @@ def generate_certificate_pdf(
         pdf.ln(3)
 
     # ── Section: Active Model Metrics ──
-    _section_header(pdf, f"Detailed Metrics — {model_name}", pw)
+    _section_header(pdf, f"Detailed Metrics - {model_name}", pw)
 
     # Table header
     col_widths = [pw * 0.38, pw * 0.22, pw * 0.22, pw * 0.18]
@@ -663,7 +668,7 @@ def generate_certificate_pdf(
             pdf.set_font("Helvetica", "I", 7.5)
             pdf.set_text_color(*_C_TEXT)
             # Calculate box height based on text
-            text = f"Clinical note: {domain.sense_check_text}"
+            text = _safe_pdf_text(f"Clinical note: {domain.sense_check_text}")
             text_w = pw - 12
             n_lines = max(1, len(text) * pdf.get_string_width("a") / text_w + 1)
             box_h = max(9, n_lines * 3.5 + 3)
@@ -714,7 +719,7 @@ def generate_certificate_pdf(
 
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*_C_TEXT)
-    pdf.multi_cell(pw, 4.5, assessment)
+    pdf.multi_cell(pw, 4.5, _safe_pdf_text(assessment))
 
     pdf.ln(4)
 
