@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Info } from 'lucide-react';
 import Button from '../ui/Button';
 import usePipelineStore from '../../stores/usePipelineStore';
 import useDataStore from '../../stores/useDataStore';
 import usePreparationStore from '../../stores/usePreparationStore';
 import useMLStore from '../../stores/useMLStore';
+import useExplainabilityStore from '../../stores/useExplainabilityStore';
 
-function getBlockingReason(currentStep, { completedSteps, schemaOK, isApplied, activeModelResult }) {
+function getBlockingReason(currentStep, { completedSteps, schemaOK, isApplied, activeModelResult, featureImportance }) {
   switch (currentStep) {
     case 1:
       if (!completedSteps.has(1))
@@ -25,12 +26,12 @@ function getBlockingReason(currentStep, { completedSteps, schemaOK, isApplied, a
         return 'Select and train at least one ML model to continue.';
       return null;
     case 5:
-      if (!completedSteps.has(5) && !activeModelResult)
-        return 'Review model results before proceeding to explainability.';
+      if (!activeModelResult)
+        return 'Train a model in Step 4 to view results and continue.';
       return null;
     case 6:
-      if (!completedSteps.has(6))
-        return 'Wait for SHAP analysis to complete before proceeding.';
+      if (!featureImportance)
+        return 'SHAP feature importance is being computed. Please wait for the analysis to finish.';
       return null;
     case 7:
       return null;
@@ -45,6 +46,7 @@ export default function FooterNav() {
   const schemaOK = useDataStore((s) => s.schemaOK);
   const isApplied = usePreparationStore((s) => s.isApplied);
   const activeModelResult = useMLStore((s) => s.activeModelResult);
+  const featureImportance = useExplainabilityStore((s) => s.featureImportance);
 
   const [showHint, setShowHint] = useState(false);
 
@@ -56,12 +58,14 @@ export default function FooterNav() {
     if (currentStep === 3 && isApplied) return true;
     // Step 5 is view-only — if a model is trained, user can proceed
     if (currentStep === 5 && activeModelResult) return true;
+    // Step 6 — SHAP loaded means user can proceed to ethics
+    if (currentStep === 6 && featureImportance) return true;
     if (completedSteps.has(currentStep)) return true;
     return false;
   })();
 
   const blockingReason = !canGoForward
-    ? getBlockingReason(currentStep, { completedSteps, schemaOK, isApplied, activeModelResult })
+    ? getBlockingReason(currentStep, { completedSteps, schemaOK, isApplied, activeModelResult, featureImportance })
     : null;
 
   const handlePrevious = () => {
@@ -127,13 +131,10 @@ export default function FooterNav() {
               Continue
             </Button>
           ) : currentStep >= 7 ? (
-            <Button
-              variant="primary"
-              disabled
-              aria-label="Pipeline complete"
-            >
-              Finish
-            </Button>
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-bg text-primary border border-primary/20">
+              <Check className="w-4 h-4" />
+              Pipeline Complete
+            </span>
           ) : (
             <button
               onClick={handleDisabledClick}
