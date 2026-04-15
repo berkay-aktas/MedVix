@@ -8,9 +8,12 @@ overfitting detection.
 
 from __future__ import annotations
 
+import logging
 import math
 import time
 import uuid
+
+logger = logging.getLogger("medvix.ml")
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -796,6 +799,7 @@ def train_model(
     if not hasattr(session, "model_objects") or session.model_objects is None:
         session.model_objects = {}
     session.model_objects[model_id] = model
+    logger.info("Stored model object %s (%s), total objects: %d", model_id, model_type, len(session.model_objects))
 
     return response
 

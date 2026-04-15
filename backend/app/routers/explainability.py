@@ -47,6 +47,7 @@ async def feature_importance(request: ExplainabilityRequest) -> ExplainabilityRe
             domain_id=session.domain_id,
         )
     except ValueError as exc:
+        logger.error("Feature importance ValueError: %s", exc, exc_info=True)
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
         logger.exception("SHAP computation failed")

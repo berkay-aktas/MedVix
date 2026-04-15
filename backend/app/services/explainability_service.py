@@ -54,36 +54,27 @@ def _get_display_name(col_name: str, feature_descriptions: Dict[str, str], colum
 
 def _rebuild_model(session: SessionState, model_id: str, model_data: dict) -> Any:
     """Retrain a model from session data when model_objects is missing."""
-    from app.services.ml_service import MODEL_REGISTRY, _cast_param
+    from app.services.ml_service import train_model
 
     model_type = model_data["model_type"]
-    entry = MODEL_REGISTRY.get(model_type)
-    if entry is None:
-        raise ValueError(f"Unknown model type '{model_type}' for rebuild.")
+    logger.info("Rebuilding model %s (%s) via train_model", model_id, model_type)
 
-    if "class" in entry:
-        model_cls = entry["class"]
-    else:
-        model_cls = entry["class_lazy"]()
+    # Use the existing train_model function which handles all edge cases
+    # Pass empty hyperparams to use defaults (avoids serialization issues)
+    train_model(session, model_type, {})
 
-    # Rebuild hyperparams from stored values
-    merged = dict(entry.get("default_kwargs", {}))
-    stored_hp = model_data.get("hyperparams", {})
-    for pdef in entry["params"]:
-        if pdef.name in stored_hp:
-            merged[pdef.name] = _cast_param(pdef, stored_hp[pdef.name])
-        else:
-            merged[pdef.name] = _cast_param(pdef, pdef.default)
+    # train_model stores the model object on session.model_objects
+    # Find the model we just trained (it'll be the latest one)
+    if session.model_objects:
+        # Return the most recently added model object
+        latest_id = list(session.model_objects.keys())[-1]
+        model = session.model_objects[latest_id]
+        # Also store under the original model_id for consistency
+        if latest_id != model_id:
+            session.model_objects[model_id] = model
+        return model
 
-    model = model_cls(**merged)
-    model.fit(session.X_train, session.y_train)
-
-    # Cache for future calls
-    if not hasattr(session, "model_objects") or session.model_objects is None:
-        session.model_objects = {}
-    session.model_objects[model_id] = model
-    logger.info("Rebuilt model %s (%s) for SHAP", model_id, model_type)
-    return model
+    raise ValueError(f"Failed to rebuild model {model_type}.")
 
 
 def compute_feature_importance(session: SessionState) -> Tuple[List[FeatureImportanceItem], List[PatientOption]]:
@@ -98,9 +89,12 @@ def compute_feature_importance(session: SessionState) -> Tuple[List[FeatureImpor
 
     # Get or rebuild model object
     model = None
+    obj_keys = list(session.model_objects.keys()) if session.model_objects else []
+    logger.info("SHAP for model_id=%s, available model_objects=%s", model_id, obj_keys)
     if session.model_objects:
         model = session.model_objects.get(model_id)
     if model is None:
+        logger.warning("Model object missing, rebuilding via train_model...")
         model = _rebuild_model(session, model_id, model_data)
 
     domain = get_domain_detail(session.domain_id)
