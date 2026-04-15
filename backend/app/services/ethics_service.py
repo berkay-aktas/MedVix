@@ -464,53 +464,42 @@ def generate_certificate_pdf(
     pdf.cell(50, 6, "requirements met")
     pdf.set_y(badge_y + 12)
 
-    # Checklist grid (2 columns)
-    col_w_half = pw / 2 - 1
-    items_list = list(EU_AI_ACT_ITEMS)
-    for row_idx in range(0, len(items_list), 2):
-        for col_idx in range(2):
-            if row_idx + col_idx >= len(items_list):
-                break
-            item = items_list[row_idx + col_idx]
-            is_pass = checklist_status.get(item.id, item.pre_checked)
-            x_start = 10 + col_idx * (col_w_half + 2)
+    # Checklist as compact rows
+    for item in EU_AI_ACT_ITEMS:
+        is_pass = checklist_status.get(item.id, item.pre_checked)
+        row_y = pdf.get_y()
 
-            if is_pass:
-                pdf.set_fill_color(*_C_SUCCESS_BG)
-                pdf.set_draw_color(167, 243, 208)
-            else:
-                pdf.set_fill_color(*_C_DANGER_BG)
-                pdf.set_draw_color(254, 202, 202)
+        # Row background
+        if is_pass:
+            pdf.set_fill_color(*_C_SUCCESS_BG)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        pdf.rect(10, row_y, pw, 7, "F")
 
-            item_y = pdf.get_y()
-            pdf.rect(x_start, item_y, col_w_half, 12, "DF")
+        # Status indicator
+        if is_pass:
+            pdf.set_fill_color(*_C_SUCCESS)
+        else:
+            pdf.set_fill_color(*_C_DANGER)
+        pdf.ellipse(13, row_y + 1.5, 4, 4, "F")
+        pdf.set_text_color(*_C_WHITE)
+        pdf.set_font("Courier", "B", 6)
+        pdf.set_xy(13.2, row_y + 1.2)
+        pdf.cell(3.6, 4, "+" if is_pass else "-", align="C")
 
-            # Icon circle
-            cx = x_start + 7
-            cy = item_y + 6
-            if is_pass:
-                pdf.set_fill_color(*_C_SUCCESS)
-            else:
-                pdf.set_fill_color(*_C_DANGER)
-            pdf.ellipse(cx - 3.5, cy - 3.5, 7, 7, "F")
+        # Title
+        pdf.set_xy(20, row_y + 0.5)
+        pdf.set_font("Helvetica", "B", 8.5)
+        pdf.set_text_color(*_C_DARK)
+        pdf.cell(80, 6, item.title)
 
-            # Icon symbol
-            pdf.set_text_color(*_C_WHITE)
-            pdf.set_font("Courier", "B", 8)
-            pdf.set_xy(cx - 2, cy - 2.5)
-            pdf.cell(4, 5, "+" if is_pass else "x", align="C")
+        # Description
+        pdf.set_xy(100, row_y + 0.5)
+        pdf.set_font("Helvetica", "", 7.5)
+        pdf.set_text_color(*_C_MUTED)
+        pdf.cell(pw - 90, 6, item.description[:60])
 
-            # Title
-            pdf.set_xy(x_start + 14, item_y + 1)
-            pdf.set_font("Helvetica", "B", 8.5)
-            pdf.set_text_color(*_C_DARK)
-            pdf.cell(col_w_half - 16, 4, item.title)
-            pdf.set_xy(x_start + 14, item_y + 5.5)
-            pdf.set_font("Helvetica", "", 7)
-            pdf.set_text_color(*_C_MUTED)
-            pdf.cell(col_w_half - 16, 4, item.description[:55])
-
-        pdf.set_y(pdf.get_y() + 14)
+        pdf.set_y(row_y + 7.5)
 
     pdf.ln(2)
 

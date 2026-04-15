@@ -33,7 +33,7 @@ export default function SummaryCard({ biasAnalysis, domainName }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `medvix_certificate_${activeModelResult.model_type}.pdf`;
+      a.download = `MedVix_Certificate_${activeModelResult.model_id}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

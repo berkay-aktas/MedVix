@@ -81,7 +81,7 @@ async def generate_certificate(request: CertificateRequest):
             io.BytesIO(pdf_bytes),
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename=medvix_certificate_{session.domain_id}.pdf"
+                "Content-Disposition": f"attachment; filename=MedVix_Certificate_{session.domain_id}_{request.model_id}.pdf"
             },
         )
     except ValueError as exc:
