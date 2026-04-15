@@ -52,20 +52,56 @@ def _get_display_name(col_name: str, feature_descriptions: Dict[str, str], colum
     return col_name.replace("_", " ").title()
 
 
+def _rebuild_model(session: SessionState, model_id: str, model_data: dict) -> Any:
+    """Retrain a model from session data when model_objects is missing."""
+    from app.services.ml_service import MODEL_REGISTRY, _cast_param
+
+    model_type = model_data["model_type"]
+    entry = MODEL_REGISTRY.get(model_type)
+    if entry is None:
+        raise ValueError(f"Unknown model type '{model_type}' for rebuild.")
+
+    if "class" in entry:
+        model_cls = entry["class"]
+    else:
+        model_cls = entry["class_lazy"]()
+
+    # Rebuild hyperparams from stored values
+    merged = dict(entry.get("default_kwargs", {}))
+    stored_hp = model_data.get("hyperparams", {})
+    for pdef in entry["params"]:
+        if pdef.name in stored_hp:
+            merged[pdef.name] = _cast_param(pdef, stored_hp[pdef.name])
+        else:
+            merged[pdef.name] = _cast_param(pdef, pdef.default)
+
+    model = model_cls(**merged)
+    model.fit(session.X_train, session.y_train)
+
+    # Cache for future calls
+    if not hasattr(session, "model_objects") or session.model_objects is None:
+        session.model_objects = {}
+    session.model_objects[model_id] = model
+    logger.info("Rebuilt model %s (%s) for SHAP", model_id, model_type)
+    return model
+
+
 def compute_feature_importance(session: SessionState) -> Tuple[List[FeatureImportanceItem], List[PatientOption]]:
     """Compute global SHAP feature importance for the active model."""
     # Find the most recently trained model
     if not session.trained_models:
         raise ValueError("No trained models found. Complete Step 4 first.")
-    if not session.model_objects:
-        raise ValueError("Model objects not available. Please retrain the model.")
 
     model_id = list(session.trained_models.keys())[-1]
     model_data = session.trained_models[model_id]
     model_type = model_data["model_type"]
-    model = session.model_objects.get(model_id)
+
+    # Get or rebuild model object
+    model = None
+    if session.model_objects:
+        model = session.model_objects.get(model_id)
     if model is None:
-        raise ValueError(f"Fitted model object not found for {model_id}.")
+        model = _rebuild_model(session, model_id, model_data)
 
     domain = get_domain_detail(session.domain_id)
     feature_cols = session.feature_columns or []
@@ -166,12 +202,16 @@ def compute_waterfall(session: SessionState, model_id: str, patient_index: int) 
     """Compute single-patient SHAP waterfall explanation."""
     if model_id not in session.trained_models:
         raise ValueError(f"Model '{model_id}' not found in session.")
-    if model_id not in session.model_objects:
-        raise ValueError("Fitted model object not available. Please retrain.")
 
     model_data = session.trained_models[model_id]
     model_type = model_data["model_type"]
-    model = session.model_objects[model_id]
+
+    # Get or rebuild model object
+    model = None
+    if session.model_objects:
+        model = session.model_objects.get(model_id)
+    if model is None:
+        model = _rebuild_model(session, model_id, model_data)
     domain = get_domain_detail(session.domain_id)
     feature_cols = session.feature_columns or []
 

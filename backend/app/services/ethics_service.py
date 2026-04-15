@@ -49,10 +49,14 @@ def compute_bias_analysis(session: SessionState, model_id: str) -> BiasAnalysisR
     """Compute subgroup fairness metrics and bias detection."""
     if model_id not in session.trained_models:
         raise ValueError(f"Model '{model_id}' not found.")
-    if not session.model_objects or model_id not in session.model_objects:
-        raise ValueError("Fitted model not available. Please retrain.")
 
-    model = session.model_objects[model_id]
+    # Get or rebuild model object
+    model = None
+    if session.model_objects:
+        model = session.model_objects.get(model_id)
+    if model is None:
+        from app.services.explainability_service import _rebuild_model
+        model = _rebuild_model(session, model_id, session.trained_models[model_id])
     domain = get_domain_detail(session.domain_id)
     feature_cols = session.feature_columns or []
     X_test = session.X_test
