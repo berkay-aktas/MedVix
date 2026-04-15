@@ -54,6 +54,8 @@ export default function FooterNav() {
     if (currentStep === 1 && completedSteps.has(1)) return true;
     if (currentStep === 2 && schemaOK) return true;
     if (currentStep === 3 && isApplied) return true;
+    // Step 5 is view-only — if a model is trained, user can proceed
+    if (currentStep === 5 && activeModelResult) return true;
     if (completedSteps.has(currentStep)) return true;
     return false;
   })();
