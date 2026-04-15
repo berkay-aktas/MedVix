@@ -89,3 +89,20 @@ async def generate_certificate(request: CertificateRequest):
     except Exception as exc:
         logger.exception("Certificate generation failed")
         raise HTTPException(status_code=500, detail=f"Certificate generation error: {str(exc)}")
+
+
+# Alias at /api/generate-certificate (matches submission spec)
+alias_router = APIRouter(tags=["Ethics & Bias"])
+
+
+@alias_router.post(
+    "/api/generate-certificate",
+    summary="Generate PDF assessment certificate (alias)",
+    description="Alias for /api/ethics/generate-certificate.",
+    responses={
+        400: {"description": "Invalid request or generation failed"},
+        404: {"description": "Session not found"},
+    },
+)
+async def generate_certificate_alias(request: CertificateRequest):
+    return await generate_certificate(request)

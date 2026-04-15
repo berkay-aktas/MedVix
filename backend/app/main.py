@@ -48,6 +48,7 @@ app.include_router(preparation.router)
 app.include_router(ml.router)
 app.include_router(explainability.router)
 app.include_router(ethics.router)
+app.include_router(ethics.alias_router)
 
 
 # --- Global exception handlers ---
