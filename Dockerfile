@@ -76,7 +76,8 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Start script — use printf to avoid CRLF issues
-RUN printf '#!/bin/bash\necho "Starting MedVix..."\ncd /app/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 &\necho "Waiting for backend..."\nsleep 2\nnginx -g "daemon off;"\n' > /app/start.sh && chmod +x /app/start.sh
+# Uses $PORT env var if set (Render, Cloud Run), falls back to 7860 (HF Spaces)
+RUN printf '#!/bin/bash\nPORT_VALUE="${PORT:-7860}"\nsed -i "s/listen 7860;/listen ${PORT_VALUE};/" /etc/nginx/sites-available/default\necho "Starting MedVix on port ${PORT_VALUE}..."\ncd /app/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 &\necho "Waiting for backend..."\nsleep 2\nnginx -g "daemon off;"\n' > /app/start.sh && chmod +x /app/start.sh
 
 EXPOSE 7860
 
