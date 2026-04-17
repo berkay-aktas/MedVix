@@ -19,9 +19,9 @@ pinned: false
 [![SHAP](https://img.shields.io/badge/SHAP-0.46-FF6F61?style=flat-square)](https://shap.readthedocs.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-HuggingFace%20Spaces-FFD21E?style=flat-square&logo=huggingface&logoColor=black)](https://bewrkay-medvix.hf.space)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-HuggingFace%20Spaces-FFD21E?style=flat-square&logo=huggingface&logoColor=black)](https://bewrkay-medvix-app.hf.space)
 
-**Live Demo:** [https://bewrkay-medvix.hf.space](https://bewrkay-medvix.hf.space)
+**Live Demo:** [https://bewrkay-medvix-app.hf.space](https://bewrkay-medvix-app.hf.space)
 
 MedVix is a web-based clinical decision-support learning tool that guides healthcare professionals, students, and researchers through a complete machine learning workflow — from selecting a medical specialty and exploring data, through model training and evaluation, to SHAP-based explanations and EU AI Act ethics compliance — all without writing a single line of code.
 
@@ -729,7 +729,7 @@ npx axe http://localhost:5173
 
 ### HuggingFace Spaces (Live)
 
-The production deployment runs on HuggingFace Spaces at [https://bewrkay-medvix.hf.space](https://bewrkay-medvix.hf.space). The Spaces platform builds and runs the production `Dockerfile` at the project root. The container listens on port 7860 (required by HuggingFace).
+The production deployment runs on HuggingFace Spaces at [https://bewrkay-medvix-app.hf.space](https://bewrkay-medvix-app.hf.space). The Spaces platform builds and runs the production `Dockerfile` at the project root. The container listens on port 7860 (required by HuggingFace).
 
 Deployment is triggered automatically when commits are pushed to the `main` branch.
 
@@ -911,7 +911,7 @@ MedVix follows a 5-sprint Scrum schedule with two-week sprints. The project jury
 
 | Resource | URL |
 |----------|-----|
-| Live Demo | [https://bewrkay-medvix.hf.space](https://bewrkay-medvix.hf.space) |
+| Live Demo | [https://bewrkay-medvix-app.hf.space](https://bewrkay-medvix-app.hf.space) |
 | Jira Scrum Board | [MedVix Board](https://medvix.atlassian.net/jira/software/projects/SCRUM/boards/1) |
 | Figma Wireframes | [MedVix Wireframes](https://www.figma.com/design/JFhrBflLLmjMYzJIK8Qnbe) |
 | GitHub Wiki | [Project Wiki](../../wiki) |
