@@ -18,6 +18,12 @@ function getCellColor(value, maxValue) {
   return 'bg-slate-50 text-slate-600';
 }
 
+/**
+ * Confusion Matrix component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ConfusionMatrix({ confusionMatrix }) {
   if (!confusionMatrix?.matrix) return null;
 

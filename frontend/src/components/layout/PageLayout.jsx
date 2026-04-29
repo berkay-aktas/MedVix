@@ -3,6 +3,12 @@ import Stepper from './Stepper';
 import DomainPillBar from './DomainPillBar';
 import FooterNav from './FooterNav';
 
+/**
+ * Page Layout layout component for the MedVix application shell.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function PageLayout({ children }) {
   return (
     <div className="min-h-screen flex flex-col bg-background">

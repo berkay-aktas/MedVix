@@ -4,6 +4,12 @@ import useDataStore from '../../stores/useDataStore';
 
 const CLASS_COLORS = ['#059669', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
+/**
+ * Class Distribution component for Step 2 (Data Exploration) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ClassDistribution() {
   const classDistribution = useDataStore((s) => s.classDistribution);
   const isImbalanced = useDataStore((s) => s.isImbalanced);

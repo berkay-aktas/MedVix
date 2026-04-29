@@ -24,6 +24,12 @@ function getSensitivityColor(value) {
   return 'text-red-600';
 }
 
+/**
+ * Model Comparison component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ModelComparison({ trainedModels, comparison }) {
   const [comparedIds, setComparedIds] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);

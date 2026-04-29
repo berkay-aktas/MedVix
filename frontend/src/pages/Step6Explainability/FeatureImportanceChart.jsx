@@ -1,5 +1,11 @@
 import { BarChart3, Info } from 'lucide-react';
 
+/**
+ * Feature Importance Chart component for Step 6 (Explainability) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function FeatureImportanceChart({ features }) {
   if (!features || features.length === 0) return null;
 

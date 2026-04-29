@@ -12,6 +12,12 @@ import CrossValidation from './CrossValidation';
 import OverfitDetector from './OverfitDetector';
 import ModelComparison from './ModelComparison';
 
+/**
+ * Step5 Results component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Step5Results() {
   const activeModelResult = useMLStore((s) => s.activeModelResult);
   const trainedModels = useMLStore((s) => s.trainedModels);

@@ -1,5 +1,11 @@
 import clsx from 'clsx';
 
+/**
+ * Slider Control reusable UI primitive component.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function SliderControl({
   label,
   min = 0,

@@ -1,5 +1,11 @@
 import { AlertTriangle } from 'lucide-react';
 
+/**
+ * Bias Detection Banner component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function BiasDetectionBanner({ biasDetected, biasMessage }) {
   if (!biasDetected) return null;
 

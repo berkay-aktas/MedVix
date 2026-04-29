@@ -1,5 +1,11 @@
 import clsx from 'clsx';
 
+/**
+ * Toggle Switch reusable UI primitive component.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ToggleSwitch({
   enabled = false,
   onChange,

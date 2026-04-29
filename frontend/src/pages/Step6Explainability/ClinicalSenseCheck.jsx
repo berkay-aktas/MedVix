@@ -1,5 +1,11 @@
 import { Stethoscope } from 'lucide-react';
 
+/**
+ * Clinical Sense Check component for Step 6 (Explainability) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ClinicalSenseCheck({ text }) {
   if (!text) return null;
 

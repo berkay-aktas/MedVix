@@ -8,6 +8,12 @@ function getMissingColor(pct) {
   return 'green';
 }
 
+/**
+ * Column Info Table component for Step 2 (Data Exploration) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ColumnInfoTable({ columns }) {
   if (!columns?.length) return null;
 

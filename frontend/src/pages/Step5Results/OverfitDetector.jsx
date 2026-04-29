@@ -3,6 +3,12 @@ import Card from '../../components/ui/Card';
 import Banner from '../../components/ui/Banner';
 import ProgressBar from '../../components/ui/ProgressBar';
 
+/**
+ * Overfit Detector component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function OverfitDetector({ trainAccuracy, testAccuracy }) {
   if (trainAccuracy == null || testAccuracy == null) return null;
 

@@ -16,6 +16,12 @@ import ColumnInfoTable from './ColumnInfoTable';
 import ClassDistribution from './ClassDistribution';
 import DataQualityScore from './DataQualityScore';
 
+/**
+ * Step2 Data Exploration component for Step 2 (Data Exploration) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Step2DataExploration() {
   const selectedDomain = usePipelineStore((s) => s.selectedDomain);
   const {

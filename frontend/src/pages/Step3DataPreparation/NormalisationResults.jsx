@@ -1,5 +1,11 @@
 import Card from '../../components/ui/Card';
 
+/**
+ * Normalisation Results component for Step 3 (Data Preparation) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function NormalisationResults({ preparationResult }) {
   const { before_after_stats, normalisation } = preparationResult;
 

@@ -9,6 +9,12 @@ const colorMap = {
   slate: 'bg-slate-400',
 };
 
+/**
+ * Progress Bar reusable UI primitive component.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ProgressBar({
   value = 0,
   color = 'green',

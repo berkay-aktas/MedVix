@@ -19,6 +19,7 @@ _DOMAINS: Dict[str, DomainDetail] = {}
 
 
 def _register(d: DomainDetail) -> None:
+    """Handle  register."""
     _DOMAINS[d.id] = d
 
 

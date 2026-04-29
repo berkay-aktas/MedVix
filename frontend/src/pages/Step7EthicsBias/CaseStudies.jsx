@@ -34,6 +34,12 @@ const CASE_STUDIES = [
   },
 ];
 
+/**
+ * Case Studies component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function CaseStudies() {
   const [expandedId, setExpandedId] = useState(null);
 

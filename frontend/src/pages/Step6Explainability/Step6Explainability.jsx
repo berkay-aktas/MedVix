@@ -11,6 +11,12 @@ import PatientSelector from './PatientSelector';
 import WaterfallChart from './WaterfallChart';
 import ClinicalSenseCheck from './ClinicalSenseCheck';
 
+/**
+ * Step6 Explainability component for Step 6 (Explainability) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Step6Explainability() {
   const activeModelResult = useMLStore((s) => s.activeModelResult);
   const sessionId = useDataStore((s) => s.sessionId);

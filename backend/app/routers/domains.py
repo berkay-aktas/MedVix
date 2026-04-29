@@ -17,6 +17,7 @@ router = APIRouter(prefix="/api/domains", tags=["Clinical Context"])
     description="Returns summary information for all 20 clinical domains.",
 )
 async def list_domains() -> DomainListResponse:
+    """Handle list domains."""
     summaries: List[DomainSummary] = get_all_domains()
     return DomainListResponse(domains=summaries, count=len(summaries))
 
@@ -29,6 +30,7 @@ async def list_domains() -> DomainListResponse:
     responses={404: {"description": "Domain not found"}},
 )
 async def get_domain(domain_id: str) -> DomainDetail:
+    """Return the domain."""
     detail = get_domain_detail(domain_id)
     if detail is None:
         raise HTTPException(

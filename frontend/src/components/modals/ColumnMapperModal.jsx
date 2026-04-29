@@ -10,6 +10,12 @@ import useDataStore from '../../stores/useDataStore';
 import usePipelineStore from '../../stores/usePipelineStore';
 import api from '../../utils/api';
 
+/**
+ * Column Mapper Modal modal dialog for the MedVix application.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ColumnMapperModal() {
   const { columnMapperOpen, closeColumnMapper } = useModalStore();
   const {

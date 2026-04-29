@@ -17,6 +17,12 @@ const sizes = {
   lg: 'text-base px-6 py-2.5',
 };
 
+/**
+ * Button reusable UI primitive component.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Button({
   children,
   variant = 'primary',

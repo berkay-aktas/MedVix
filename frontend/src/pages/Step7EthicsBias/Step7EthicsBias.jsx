@@ -13,6 +13,12 @@ import EUChecklist from './EUChecklist';
 import CaseStudies from './CaseStudies';
 import SummaryCard from './SummaryCard';
 
+/**
+ * Step7 Ethics Bias component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Step7EthicsBias() {
   const activeModelResult = useMLStore((s) => s.activeModelResult);
   const sessionId = useDataStore((s) => s.sessionId);

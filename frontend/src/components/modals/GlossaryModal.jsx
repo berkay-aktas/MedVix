@@ -5,6 +5,12 @@ import Badge from '../ui/Badge';
 import useModalStore from '../../stores/useModalStore';
 import GLOSSARY from '../../utils/glossary';
 
+/**
+ * Glossary Modal modal dialog for the MedVix application.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function GlossaryModal() {
   const { glossaryOpen, closeGlossary } = useModalStore();
   const [search, setSearch] = useState('');

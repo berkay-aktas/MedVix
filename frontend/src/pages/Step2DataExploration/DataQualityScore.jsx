@@ -13,6 +13,12 @@ function getScoreLabel(score) {
   return 'Poor';
 }
 
+/**
+ * Data Quality Score component for Step 2 (Data Exploration) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function DataQualityScore() {
   const dataQualityScore = useDataStore((s) => s.dataQualityScore);
 

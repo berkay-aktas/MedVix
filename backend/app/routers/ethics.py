@@ -36,6 +36,7 @@ router = APIRouter(prefix="/api/ethics", tags=["Ethics & Bias"])
     },
 )
 async def bias_analysis(request: BiasAnalysisRequest) -> BiasAnalysisResponse:
+    """Handle bias analysis."""
     session = session_service.get_session(request.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -56,6 +57,7 @@ async def bias_analysis(request: BiasAnalysisRequest) -> BiasAnalysisResponse:
     description="Returns the 8 EU AI Act compliance checklist items with pre-checked defaults.",
 )
 async def checklist_items() -> List[ChecklistItemDef]:
+    """Handle checklist items."""
     return get_checklist_items()
 
 
@@ -69,6 +71,7 @@ async def checklist_items() -> List[ChecklistItemDef]:
     },
 )
 async def generate_certificate(request: CertificateRequest):
+    """Handle generate certificate."""
     session = session_service.get_session(request.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -105,4 +108,5 @@ alias_router = APIRouter(tags=["Ethics & Bias"])
     },
 )
 async def generate_certificate_alias(request: CertificateRequest):
+    """Handle generate certificate alias."""
     return await generate_certificate(request)

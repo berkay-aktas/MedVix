@@ -2,6 +2,12 @@ import { useEffect, useRef, useCallback } from 'react';
 import { X } from 'lucide-react';
 import clsx from 'clsx';
 
+/**
+ * Modal reusable UI primitive component.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Modal({
   isOpen,
   onClose,

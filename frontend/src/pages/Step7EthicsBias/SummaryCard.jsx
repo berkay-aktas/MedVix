@@ -5,6 +5,12 @@ import useDataStore from '../../stores/useDataStore';
 import useEthicsStore from '../../stores/useEthicsStore';
 import api from '../../utils/api';
 
+/**
+ * Summary Card component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function SummaryCard({ biasAnalysis, domainName }) {
   const activeModelResult = useMLStore((s) => s.activeModelResult);
   const sessionId = useDataStore((s) => s.sessionId);

@@ -1,4 +1,10 @@
-export default function SplitVisualizer({ trainRatio, trainRows, testRows }) {
+
+/**
+ * Split Visualizer component for Step 3 (Data Preparation) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */export default function SplitVisualizer({ trainRatio, trainRows, testRows }) {
   return (
     <div className="mt-4">
       {/* Split bar */}

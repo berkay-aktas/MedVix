@@ -16,6 +16,12 @@ import useModalStore from '../../stores/useModalStore';
 import DOMAINS, { getDomainById, getDomainGradient } from '../../utils/domains';
 import api from '../../utils/api';
 
+/**
+ * Step1 Clinical Context component for Step 1 (Clinical Context) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Step1ClinicalContext() {
   const {
     selectedDomain,

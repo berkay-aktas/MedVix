@@ -38,6 +38,7 @@ router = APIRouter(prefix="/api/ml", tags=["Model Training"])
     },
 )
 async def get_hyperparams(model_type: str) -> HyperparamsResponse:
+    """Return the hyperparams."""
     try:
         return get_hyperparam_definitions(model_type)
     except ValueError as exc:
@@ -59,6 +60,7 @@ async def get_hyperparams(model_type: str) -> HyperparamsResponse:
     },
 )
 async def train(request: TrainRequest) -> TrainResponse:
+    """Handle train."""
     session = session_service.get_session(request.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -87,6 +89,7 @@ async def train(request: TrainRequest) -> TrainResponse:
 async def list_models(
     session_id: str = Query(..., description="Session ID"),
 ) -> List[TrainedModelSummary]:
+    """Handle list models."""
     session = session_service.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -108,6 +111,7 @@ async def list_models(
     },
 )
 async def compare(request: CompareRequest) -> ComparisonResponse:
+    """Handle compare."""
     session = session_service.get_session(request.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")

@@ -22,6 +22,12 @@ function SensitivityCell({ value }) {
   return <td className={`px-3.5 py-2.5 font-mono text-[13px] font-medium ${color}`}>{pct}%</td>;
 }
 
+/**
+ * Subgroup Table component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function SubgroupTable({ subgroups, overallSensitivity }) {
   if (!subgroups || subgroups.length === 0) return null;
 

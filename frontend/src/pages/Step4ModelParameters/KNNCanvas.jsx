@@ -51,6 +51,12 @@ function euclidean(a, b) {
   return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2);
 }
 
+/**
+ * K N N Canvas component for Step 4 (Model & Parameters) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function KNNCanvas({ k = 5 }) {
   const canvasRef = useRef(null);
   const sessionId = useDataStore((s) => s.sessionId);

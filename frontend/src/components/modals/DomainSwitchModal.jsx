@@ -10,6 +10,12 @@ import useExplainabilityStore from '../../stores/useExplainabilityStore';
 import useEthicsStore from '../../stores/useEthicsStore';
 import DOMAINS, { getDomainById } from '../../utils/domains';
 
+/**
+ * Domain Switch Modal modal dialog for the MedVix application.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function DomainSwitchModal() {
   const { domainSwitchOpen, domainSwitchTarget, closeDomainSwitch } =
     useModalStore();

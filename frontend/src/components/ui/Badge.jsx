@@ -12,6 +12,12 @@ const variantStyles = {
   default: 'bg-slate-100 text-slate-700',
 };
 
+/**
+ * Badge reusable UI primitive component.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Badge({ children, variant = 'default', className }) {
   return (
     <span

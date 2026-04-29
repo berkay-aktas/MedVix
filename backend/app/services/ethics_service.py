@@ -243,6 +243,7 @@ EU_AI_ACT_ITEMS: List[ChecklistItemDef] = [
 
 
 def get_checklist_items() -> List[ChecklistItemDef]:
+    """Return the checklist items."""
     return EU_AI_ACT_ITEMS
 
 

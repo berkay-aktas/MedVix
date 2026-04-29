@@ -12,6 +12,12 @@ import {
 } from 'recharts';
 import Card from '../../components/ui/Card';
 
+/**
+ * Cross Validation component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function CrossValidation({ cvData }) {
   if (!cvData?.fold_scores || cvData.fold_scores.length === 0) return null;
 

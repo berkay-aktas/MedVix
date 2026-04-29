@@ -10,6 +10,12 @@ import {
 } from 'recharts';
 import Card from '../../components/ui/Card';
 
+/**
+ * R O C Curve component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ROCCurve({ rocData }) {
   if (!rocData?.fpr || !rocData?.tpr) return null;
 

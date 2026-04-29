@@ -55,6 +55,7 @@ app.include_router(ethics.alias_router)
 
 @app.exception_handler(ValueError)
 async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse:
+    """Handle value error handler."""
     return JSONResponse(
         status_code=400,
         content={"detail": str(exc), "error_code": "VALIDATION_ERROR"},
@@ -63,6 +64,7 @@ async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Handle generic exception handler."""
     logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
     return JSONResponse(
         status_code=500,

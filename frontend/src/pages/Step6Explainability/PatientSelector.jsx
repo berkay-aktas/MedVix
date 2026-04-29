@@ -1,5 +1,11 @@
 import { ChevronDown } from 'lucide-react';
 
+/**
+ * Patient Selector component for Step 6 (Explainability) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function PatientSelector({ patients, selectedIndex, onSelect }) {
   if (!patients || patients.length === 0) return null;
 

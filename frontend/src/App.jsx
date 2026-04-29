@@ -60,6 +60,12 @@ function CurrentStep() {
   }
 }
 
+/**
+ * App component for the MedVix application.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function App() {
   const setDomain = usePipelineStore((s) => s.setDomain);
   const selectedDomain = usePipelineStore((s) => s.selectedDomain);

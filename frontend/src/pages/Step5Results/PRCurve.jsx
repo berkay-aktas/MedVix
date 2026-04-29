@@ -9,6 +9,12 @@ import {
 } from 'recharts';
 import Card from '../../components/ui/Card';
 
+/**
+ * P R Curve component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function PRCurve({ prData }) {
   if (!prData?.recall_values || !prData?.precision_values) return null;
 

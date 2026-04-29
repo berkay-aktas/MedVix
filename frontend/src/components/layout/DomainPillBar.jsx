@@ -5,6 +5,12 @@ import DOMAINS from '../../utils/domains';
 import usePipelineStore from '../../stores/usePipelineStore';
 import useModalStore from '../../stores/useModalStore';
 
+/**
+ * Domain Pill Bar layout component for the MedVix application shell.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function DomainPillBar() {
   const scrollRef = useRef(null);
   const [showLeft, setShowLeft] = useState(false);

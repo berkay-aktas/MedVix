@@ -6,6 +6,12 @@ import clsx from 'clsx';
 import Card from '../../components/ui/Card';
 import { validateCSVFile } from '../../utils/validators';
 
+/**
+ * Upload Zone component for Step 2 (Data Exploration) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function UploadZone({ onUpload, isLoading }) {
   const onDrop = useCallback(
     (acceptedFiles, rejectedFiles) => {

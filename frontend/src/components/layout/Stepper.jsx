@@ -6,6 +6,12 @@ import usePipelineStore from '../../stores/usePipelineStore';
 import useDataStore from '../../stores/useDataStore';
 import Banner from '../ui/Banner';
 
+/**
+ * Stepper layout component for the MedVix application shell.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Stepper() {
   const { currentStep, completedSteps, setStep, isStepAccessible } =
     usePipelineStore();

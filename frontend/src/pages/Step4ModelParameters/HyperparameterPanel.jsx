@@ -10,6 +10,12 @@ import useDataStore from '../../stores/useDataStore';
 import usePipelineStore from '../../stores/usePipelineStore';
 import api from '../../utils/api';
 
+/**
+ * Hyperparameter Panel component for Step 4 (Model & Parameters) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function HyperparameterPanel({ paramConfig }) {
   const hyperparams = useMLStore((s) => s.hyperparams);
   const setHyperparam = useMLStore((s) => s.setHyperparam);

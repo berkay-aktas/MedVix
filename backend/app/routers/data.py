@@ -45,6 +45,7 @@ async def upload_csv(
     domain_id: str = Query(..., description="Domain ID this dataset belongs to"),
 ) -> UploadResponse:
     # Validate domain
+    """Handle upload csv."""
     domain = get_domain_detail(domain_id)
     if domain is None:
         raise HTTPException(status_code=400, detail=f"Unknown domain: '{domain_id}'")
@@ -78,6 +79,7 @@ async def upload_csv(
     },
 )
 async def load_builtin(body: BuiltinDatasetRequest) -> UploadResponse:
+    """Handle load builtin."""
     domain = get_domain_detail(body.domain_id)
     if domain is None:
         raise HTTPException(
@@ -112,6 +114,7 @@ async def load_builtin(body: BuiltinDatasetRequest) -> UploadResponse:
 async def get_summary(
     session_id: str = Query(..., description="Session ID"),
 ) -> DataSummary:
+    """Return the summary."""
     session = session_service.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -142,6 +145,7 @@ async def get_summary(
     responses={404: {"description": "Session not found"}},
 )
 async def set_column_mapping(body: ColumnMapperRequest) -> ColumnMapperResponse:
+    """Handle set column mapping."""
     session = session_service.get_session(body.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -187,6 +191,7 @@ async def preview_data(
         default=5, ge=1, le=100, description="Number of rows to preview"
     ),
 ) -> DataPreviewResponse:
+    """Handle preview data."""
     session = session_service.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")

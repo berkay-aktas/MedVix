@@ -7,6 +7,12 @@ import ModelSelector from './ModelSelector';
 import HyperparameterPanel from './HyperparameterPanel';
 import KNNCanvas from './KNNCanvas';
 
+/**
+ * Step4 Model Parameters component for Step 4 (Model & Parameters) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Step4ModelParameters() {
   const selectedModel = useMLStore((s) => s.selectedModel);
   const activeModelResult = useMLStore((s) => s.activeModelResult);

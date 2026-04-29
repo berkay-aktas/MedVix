@@ -36,6 +36,7 @@ class PreparationStatusResponse(BaseModel):
     },
 )
 async def prepare(config: PreparationConfig) -> PreparationResult:
+    """Handle prepare."""
     session = session_service.get_session(config.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -83,6 +84,7 @@ async def prepare(config: PreparationConfig) -> PreparationResult:
 async def preparation_status(
     session_id: str = Query(..., description="Session ID"),
 ) -> PreparationStatusResponse:
+    """Handle preparation status."""
     session = session_service.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")

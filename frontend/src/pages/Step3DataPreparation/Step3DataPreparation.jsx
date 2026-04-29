@@ -14,6 +14,12 @@ import SplitVisualizer from './SplitVisualizer';
 import NormalisationResults from './NormalisationResults';
 import SmoteResults from './SmoteResults';
 
+/**
+ * Step3 Data Preparation component for Step 3 (Data Preparation) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Step3DataPreparation() {
   const sessionId = useDataStore((s) => s.sessionId);
   const isImbalanced = useDataStore((s) => s.isImbalanced);

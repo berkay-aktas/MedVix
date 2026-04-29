@@ -1,6 +1,12 @@
 import { Check } from 'lucide-react';
 import clsx from 'clsx';
 
+/**
+ * Option Card reusable UI primitive component.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function OptionCard({
   title,
   description,

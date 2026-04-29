@@ -79,6 +79,12 @@ const DIFFICULTY_CONFIG = {
   advanced: { label: 'Advanced', bg: 'bg-red-100', text: 'text-red-800' },
 };
 
+/**
+ * Model Selector component for Step 4 (Model & Parameters) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function ModelSelector({ onParamsLoaded }) {
   const selectedModel = useMLStore((s) => s.selectedModel);
   const setSelectedModel = useMLStore((s) => s.setSelectedModel);

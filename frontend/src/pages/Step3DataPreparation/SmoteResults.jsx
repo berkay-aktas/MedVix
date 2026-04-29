@@ -3,6 +3,12 @@ import Card from '../../components/ui/Card';
 
 const CLASS_COLORS = ['#059669', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
 
+/**
+ * Smote Results component for Step 3 (Data Preparation) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function SmoteResults({ smote }) {
   if (!smote?.applied) return null;
 

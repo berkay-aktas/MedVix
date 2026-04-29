@@ -1,5 +1,11 @@
 import Card from '../../components/ui/Card';
 
+/**
+ * Data Preview component for Step 2 (Data Exploration) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function DataPreview({ preview }) {
   if (!preview || !preview.rows?.length) return null;
 

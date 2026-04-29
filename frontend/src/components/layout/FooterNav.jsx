@@ -40,6 +40,12 @@ function getBlockingReason(currentStep, { completedSteps, schemaOK, isApplied, a
   }
 }
 
+/**
+ * Footer Nav layout component for the MedVix application shell.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function FooterNav() {
   const { currentStep, completedSteps, setStep, isStepAccessible } =
     usePipelineStore();

@@ -3,6 +3,12 @@ import usePipelineStore from '../../stores/usePipelineStore';
 import useModalStore from '../../stores/useModalStore';
 import { getDomainById } from '../../utils/domains';
 
+/**
+ * Navbar layout component for the MedVix application shell.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function Navbar() {
   const selectedDomain = usePipelineStore((s) => s.selectedDomain);
   const openGlossary = useModalStore((s) => s.openGlossary);

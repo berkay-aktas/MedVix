@@ -14,6 +14,12 @@ function getStatusBg(value) {
   return 'bg-red-50';
 }
 
+/**
+ * Metrics Grid component for Step 5 (Results) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function MetricsGrid({ metrics }) {
   if (!metrics || metrics.length === 0) return null;
 

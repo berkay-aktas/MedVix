@@ -33,6 +33,7 @@ router = APIRouter(prefix="/api/explainability", tags=["Explainability"])
     },
 )
 async def feature_importance(request: ExplainabilityRequest) -> ExplainabilityResponse:
+    """Handle feature importance."""
     session = session_service.get_session(request.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -65,6 +66,7 @@ async def feature_importance(request: ExplainabilityRequest) -> ExplainabilityRe
     },
 )
 async def waterfall(request: WaterfallRequest) -> WaterfallResponse:
+    """Handle waterfall."""
     session = session_service.get_session(request.session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")

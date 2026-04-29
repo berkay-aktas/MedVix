@@ -1,6 +1,12 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { BarChart3, AlertTriangle } from 'lucide-react';
 
+/**
+ * Training Data Chart component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function TrainingDataChart({ comparisonData }) {
   if (!comparisonData || comparisonData.length === 0) return null;
 

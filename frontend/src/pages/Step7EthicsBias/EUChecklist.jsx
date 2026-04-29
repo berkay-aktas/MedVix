@@ -13,6 +13,12 @@ const CHECKLIST_ITEMS = [
   { id: 'post_market', title: 'Post-market monitoring', description: 'Monitoring plan established for deployment performance' },
 ];
 
+/**
+ * E U Checklist component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
+ *
+ * @param {object} props - Component props.
+ * @returns {JSX.Element} Rendered component.
+ */
 export default function EUChecklist() {
   const checklistStatus = useEthicsStore((s) => s.checklistStatus);
   const toggleChecklistItem = useEthicsStore((s) => s.toggleChecklistItem);
