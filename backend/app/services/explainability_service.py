@@ -5,10 +5,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import shap
+from sklearn.decomposition import PCA
 
 from app.models.explainability import (
     ExplainabilityResponse,
     FeatureImportanceItem,
+    PatientMapPoint,
+    PatientMapResponse,
     PatientOption,
     WaterfallBar,
     WaterfallResponse,
@@ -344,4 +347,214 @@ def compute_waterfall(session: SessionState, model_id: str, patient_index: int) 
         prediction_label=pred_label,
         prediction_class=pred_class,
         summary_text=" ".join(summary_parts),
+    )
+
+
+def _find_feature_index(feature_cols: List[str], target: Optional[str]) -> int:
+    """Locate a feature column by exact, then case-insensitive, name match."""
+    if not target or not feature_cols:
+        return -1
+    if target in feature_cols:
+        return feature_cols.index(target)
+    target_lower = target.lower()
+    for i, col in enumerate(feature_cols):
+        if col.lower() == target_lower:
+            return i
+    return -1
+
+
+def _short_patient_label(idx: int, row_raw: np.ndarray, feature_cols: List[str], male_val: int) -> str:
+    """Build a short human-readable label, e.g. 'Patient #12 — Male, 63'."""
+    parts = [f"Patient #{idx + 1}"]
+    age_val = None
+    sex_str = None
+    for j, col in enumerate(feature_cols):
+        if j >= len(row_raw):
+            continue
+        col_lower = col.lower()
+        if age_val is None and "age" in col_lower:
+            try:
+                age_val = int(round(float(row_raw[j])))
+            except (ValueError, TypeError):
+                age_val = None
+        elif sex_str is None and ("sex" in col_lower or "gender" in col_lower):
+            try:
+                sex_str = "Male" if int(round(float(row_raw[j]))) == male_val else "Female"
+            except (ValueError, TypeError):
+                sex_str = None
+    extras = []
+    if sex_str is not None:
+        extras.append(sex_str)
+    if age_val is not None:
+        extras.append(f"{age_val} y")
+    if extras:
+        parts.append(", ".join(extras))
+    return " — ".join(parts)
+
+
+def compute_patient_map(session: SessionState, model_id: str) -> PatientMapResponse:
+    """Project the test set into 2D via PCA, predict per-patient probabilities,
+    and attach subgroup labels for the Step 6 risk-map scatter."""
+    if not session.trained_models:
+        raise ValueError("No trained models found. Complete Step 4 first.")
+    if model_id not in session.trained_models:
+        raise ValueError(f"Model '{model_id}' not found in session.")
+
+    model_data = session.trained_models[model_id]
+    model_type = model_data["model_type"]
+
+    # Reuse model object retrieval / rebuild path from compute_waterfall
+    model = None
+    if session.model_objects:
+        model = session.model_objects.get(model_id)
+    if model is None:
+        logger.warning("Model object missing for patient-map; rebuilding via train_model...")
+        model = _rebuild_model(session, model_id, model_data)
+
+    domain = get_domain_detail(session.domain_id)
+    feature_cols = session.feature_columns or []
+
+    X_train = session.X_train
+    X_test = session.X_test
+    y_test = getattr(session, "y_test", None)
+
+    if X_test is None or len(X_test) == 0:
+        raise ValueError("Test set is empty; cannot compute patient map.")
+
+    # ------------- PCA: fit on training data, transform the test set -------------
+    n_samples_train = X_train.shape[0] if X_train is not None else 0
+    n_features = X_test.shape[1]
+    n_components = min(2, n_features, n_samples_train if n_samples_train else n_features)
+    if n_components < 2:
+        # Degenerate: pad with zeros so the frontend always gets 2 axes
+        coords = np.zeros((len(X_test), 2), dtype=float)
+        explained_variance = [0.0, 0.0]
+    else:
+        pca = PCA(n_components=2, random_state=42)
+        pca.fit(X_train)
+        coords = pca.transform(X_test)
+        explained_variance = [float(v) for v in pca.explained_variance_ratio_]
+
+    # ------------- Probabilities & predicted classes -------------
+    is_multiclass = False
+    proba_matrix = None
+    if hasattr(model, "predict_proba"):
+        proba_matrix = model.predict_proba(X_test)
+        if proba_matrix.ndim == 2 and proba_matrix.shape[1] > 2:
+            is_multiclass = True
+        elif proba_matrix.ndim != 2:
+            proba_matrix = None
+
+    if proba_matrix is None:
+        # Fallback: use predict() and synthesise a confidence stand-in (0.5 default)
+        preds = model.predict(X_test)
+        positive_proba = np.full(len(X_test), 0.5, dtype=float)
+        predicted_int = np.asarray(preds, dtype=int).ravel()
+    else:
+        if is_multiclass:
+            positive_proba = np.max(proba_matrix, axis=1)
+            predicted_int = np.argmax(proba_matrix, axis=1)
+        else:
+            # Binary: class-1 probability
+            positive_proba = proba_matrix[:, 1] if proba_matrix.shape[1] >= 2 else proba_matrix.ravel()
+            predicted_int = (positive_proba >= 0.5).astype(int)
+
+    # Actual labels — if available on session
+    if y_test is not None:
+        actual_int = np.asarray(y_test, dtype=int).ravel()
+    else:
+        actual_int = None
+
+    # ------------- Inverse-transform X_test for subgroup label resolution -------------
+    if hasattr(session, "scaler") and session.scaler is not None:
+        try:
+            X_test_raw = session.scaler.inverse_transform(X_test)
+        except Exception:
+            X_test_raw = X_test
+    else:
+        X_test_raw = X_test
+
+    # Resolve subgroup column indices from the domain config
+    subgroup_config = domain.subgroup_columns or {}
+    sex_col_name = subgroup_config.get("sex_column")
+    sex_male_value = int(subgroup_config.get("sex_male_value", 1))
+    age_col_name = subgroup_config.get("age_column")
+    age_threshold = subgroup_config.get("age_threshold")
+
+    sex_idx = _find_feature_index(feature_cols, sex_col_name) if sex_col_name else -1
+    age_idx = _find_feature_index(feature_cols, age_col_name) if age_col_name else -1
+
+    has_sex_subgroup = sex_idx >= 0
+    has_age_subgroup = age_idx >= 0 and age_threshold is not None
+
+    # ------------- Build per-patient points -------------
+    points: List[PatientMapPoint] = []
+    n_misclassified = 0
+    for i in range(len(X_test)):
+        row_raw = X_test_raw[i]
+
+        # Subgroup labels
+        sex_label: Optional[str] = None
+        if has_sex_subgroup and sex_idx < len(row_raw):
+            try:
+                sex_label = "Male" if int(round(float(row_raw[sex_idx]))) == sex_male_value else "Female"
+            except (ValueError, TypeError):
+                sex_label = None
+
+        age_label: Optional[str] = None
+        if has_age_subgroup and age_idx < len(row_raw):
+            try:
+                age_val = float(row_raw[age_idx])
+                age_label = f">={int(age_threshold)}" if age_val >= age_threshold else f"<{int(age_threshold)}"
+            except (ValueError, TypeError):
+                age_label = None
+
+        # Class strings (consistent with WaterfallResponse for binary; raw label index for multiclass)
+        if is_multiclass:
+            predicted_class = str(int(predicted_int[i]))
+            actual_class = str(int(actual_int[i])) if actual_int is not None else None
+        else:
+            predicted_class = "positive" if int(predicted_int[i]) == 1 else "negative"
+            if actual_int is not None:
+                actual_class = "positive" if int(actual_int[i]) == 1 else "negative"
+            else:
+                actual_class = None
+
+        is_misc = bool(actual_class is not None and predicted_class != actual_class)
+        if is_misc:
+            n_misclassified += 1
+
+        label = _short_patient_label(i, row_raw, feature_cols, sex_male_value)
+
+        points.append(PatientMapPoint(
+            index=i,
+            x=round(float(coords[i, 0]), 4),
+            y=round(float(coords[i, 1]), 4),
+            probability=round(float(positive_proba[i]), 4),
+            predicted_class=predicted_class,
+            actual_class=actual_class,
+            label=label,
+            subgroup_sex=sex_label,
+            subgroup_age=age_label,
+            is_misclassified=is_misc,
+            is_multiclass=is_multiclass,
+        ))
+
+    logger.info(
+        "Patient map computed: %d points, %d misclassified (%.1f%%), explained_variance=%.3f / %.3f, multiclass=%s",
+        len(points),
+        n_misclassified,
+        100.0 * n_misclassified / max(len(points), 1),
+        explained_variance[0],
+        explained_variance[1] if len(explained_variance) > 1 else 0.0,
+        is_multiclass,
+    )
+
+    return PatientMapResponse(
+        points=points,
+        pca_explained_variance=explained_variance,
+        has_sex_subgroup=has_sex_subgroup,
+        has_age_subgroup=has_age_subgroup,
+        domain_id=session.domain_id,
+        is_multiclass=is_multiclass,
     )

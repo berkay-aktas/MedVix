@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 from app.models.explainability import (
     ExplainabilityRequest,
     ExplainabilityResponse,
+    PatientMapResponse,
     WaterfallRequest,
     WaterfallResponse,
 )
@@ -14,6 +15,7 @@ from app.services import session_service
 from app.services.domain_service import get_domain_detail
 from app.services.explainability_service import (
     compute_feature_importance,
+    compute_patient_map,
     compute_waterfall,
 )
 
@@ -78,3 +80,33 @@ async def waterfall(request: WaterfallRequest) -> WaterfallResponse:
     except Exception as exc:
         logger.exception("Waterfall computation failed")
         raise HTTPException(status_code=500, detail=f"Waterfall computation error: {str(exc)}")
+
+
+@router.post(
+    "/patient-map",
+    response_model=PatientMapResponse,
+    summary="Compute 2D patient risk map (PCA + per-patient probabilities)",
+    description=(
+        "Projects the test set into 2D via PCA and attaches per-patient predicted "
+        "probability, predicted/actual class, and optional sex/age subgroup labels. "
+        "Used by the Step 6 Patient Risk Map scatter plot."
+    ),
+    responses={
+        400: {"description": "Model not trained or computation failed"},
+        404: {"description": "Session not found"},
+    },
+)
+async def patient_map(request: ExplainabilityRequest) -> PatientMapResponse:
+    """Handle patient-map computation."""
+    session = session_service.get_session(request.session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found.")
+
+    try:
+        return compute_patient_map(session, request.model_id)
+    except ValueError as exc:
+        logger.error("Patient map ValueError: %s", exc)
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.exception("Patient map computation failed")
+        raise HTTPException(status_code=500, detail=f"Patient map computation error: {str(exc)}")
