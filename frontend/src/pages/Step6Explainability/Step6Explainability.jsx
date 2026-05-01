@@ -10,6 +10,7 @@ import FeatureImportanceChart from './FeatureImportanceChart';
 import PatientSelector from './PatientSelector';
 import WaterfallChart from './WaterfallChart';
 import ClinicalSenseCheck from './ClinicalSenseCheck';
+import PatientRiskMap from './PatientRiskMap';
 
 /**
  * Step6 Explainability component for Step 6 (Explainability) of the MedVix pipeline.
@@ -36,9 +37,11 @@ export default function Step6Explainability() {
     setWaterfallData,
     setIsLoading,
     setIsWaterfallLoading,
+    setPatientMapData,
+    setIsMapLoading,
   } = useExplainabilityStore();
 
-  // Fetch feature importance on mount / model change
+  // Fetch feature importance + patient map on mount / model change
   useEffect(() => {
     if (!sessionId || !activeModelResult) return;
 
@@ -58,7 +61,24 @@ export default function Step6Explainability() {
       }
     };
 
+    const fetchPatientMap = async () => {
+      setIsMapLoading(true);
+      // Don't toast on map failures — the rest of Step 6 should still work
+      try {
+        const res = await api.post('/explainability/patient-map', {
+          session_id: sessionId,
+          model_id: activeModelResult.model_id,
+        });
+        setPatientMapData(res.data);
+      } catch {
+        setPatientMapData(null);
+      } finally {
+        setIsMapLoading(false);
+      }
+    };
+
     fetchImportance();
+    fetchPatientMap();
   }, [sessionId, activeModelResult?.model_id]);
 
   // Fetch waterfall when patient selected
@@ -137,6 +157,9 @@ export default function Step6Explainability() {
           </p>
         </div>
       </div>
+
+      {/* Patient Risk Map — headline visual */}
+      <PatientRiskMap />
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-5">
