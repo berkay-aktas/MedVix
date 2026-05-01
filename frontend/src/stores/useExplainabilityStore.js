@@ -9,6 +9,10 @@ const useExplainabilityStore = create((set) => ({
   isLoading: false,
   isWaterfallLoading: false,
   domainId: null,
+  // Patient Risk Map state
+  patientMapData: null,         // PatientMapResponse from backend
+  isMapLoading: false,
+  mapColorMode: 'probability',  // 'probability' | 'sex' | 'age'
 
   setFeatureImportance: (data) => set({
     featureImportance: data.feature_importance,
@@ -20,6 +24,9 @@ const useExplainabilityStore = create((set) => ({
   setWaterfallData: (data) => set({ waterfallData: data }),
   setIsLoading: (loading) => set({ isLoading: loading }),
   setIsWaterfallLoading: (loading) => set({ isWaterfallLoading: loading }),
+  setPatientMapData: (data) => set({ patientMapData: data }),
+  setIsMapLoading: (loading) => set({ isMapLoading: loading }),
+  setMapColorMode: (mode) => set({ mapColorMode: mode }),
   resetExplainability: () => set({
     featureImportance: null,
     senseCheckText: '',
@@ -29,6 +36,9 @@ const useExplainabilityStore = create((set) => ({
     isLoading: false,
     isWaterfallLoading: false,
     domainId: null,
+    patientMapData: null,
+    isMapLoading: false,
+    mapColorMode: 'probability',
   }),
 }));
 
