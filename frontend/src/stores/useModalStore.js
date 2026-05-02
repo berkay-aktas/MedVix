@@ -5,6 +5,9 @@ const useModalStore = create((set) => ({
   columnMapperOpen: false,
   domainSwitchOpen: false,
   domainSwitchTarget: null,
+  dataInspectorOpen: false,
+  dataInspectorFilterNames: null,
+  dataInspectorInitialColumn: null,
 
   openGlossary: () => set({ glossaryOpen: true }),
   closeGlossary: () => set({ glossaryOpen: false }),
@@ -16,6 +19,19 @@ const useModalStore = create((set) => ({
     set({ domainSwitchOpen: true, domainSwitchTarget: targetDomain }),
   closeDomainSwitch: () =>
     set({ domainSwitchOpen: false, domainSwitchTarget: null }),
+
+  openDataInspector: (options = {}) =>
+    set({
+      dataInspectorOpen: true,
+      dataInspectorFilterNames: options.filterNames || null,
+      dataInspectorInitialColumn: options.initialColumn || null,
+    }),
+  closeDataInspector: () =>
+    set({
+      dataInspectorOpen: false,
+      dataInspectorFilterNames: null,
+      dataInspectorInitialColumn: null,
+    }),
 }));
 
 export default useModalStore;

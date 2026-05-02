@@ -5,6 +5,7 @@ import PageLayout from './components/layout/PageLayout';
 import GlossaryModal from './components/modals/GlossaryModal';
 import DomainSwitchModal from './components/modals/DomainSwitchModal';
 import ColumnMapperModal from './components/modals/ColumnMapperModal';
+import DataInspectorModal from './components/modals/DataInspectorModal';
 import Step1ClinicalContext from './pages/Step1ClinicalContext/Step1ClinicalContext';
 import Step2DataExploration from './pages/Step2DataExploration/Step2DataExploration';
 import Step3DataPreparation from './pages/Step3DataPreparation/Step3DataPreparation';
@@ -127,6 +128,7 @@ export default function App() {
       <GlossaryModal />
       <DomainSwitchModal />
       <ColumnMapperModal />
+      <DataInspectorModal />
     </>
   );
 }
