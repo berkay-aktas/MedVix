@@ -121,9 +121,9 @@ export default function Step2DataExploration() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-5">
         {/* Left panel: Upload / Built-in */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0">
           {/* Upload Zone */}
           <UploadZone onUpload={handleUpload} isLoading={isLoading} />
 
@@ -195,7 +195,7 @@ export default function Step2DataExploration() {
         </div>
 
         {/* Right panel: Data exploration results */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0">
           {isLoading && !hasData ? (
             <Card>
               <div className="space-y-3">
