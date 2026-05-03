@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Trophy, Plus, X, LayoutGrid } from 'lucide-react';
+import { useState } from 'react';
+import { Trophy, Eye, X } from 'lucide-react';
 import clsx from 'clsx';
 import Card from '../../components/ui/Card';
 
@@ -26,44 +26,32 @@ function getSensitivityColor(value) {
 
 /**
  * Model Comparison component for Step 5 (Results) of the MedVix pipeline.
+ * Auto-includes every trained model; users can hide and unhide individual
+ * models with the X / Show buttons.
  *
  * @param {object} props - Component props.
  * @returns {JSX.Element} Rendered component.
  */
 export default function ModelComparison({ trainedModels, comparison }) {
-  const [comparedIds, setComparedIds] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  // Auto-add the first model when it appears
-  useEffect(() => {
-    if (trainedModels?.length > 0 && comparedIds.length === 0) {
-      setComparedIds([trainedModels[trainedModels.length - 1].model_id]);
-    }
-  }, [trainedModels]);
+  // Track which model_ids the user has explicitly hidden.
+  // Default: nothing hidden — every trained model auto-appears.
+  const [hiddenIds, setHiddenIds] = useState(() => new Set());
 
   if (!trainedModels || trainedModels.length === 0) return null;
 
-  const comparedModels = trainedModels.filter((m) =>
-    comparedIds.includes(m.model_id)
-  );
-  const availableToAdd = trainedModels.filter(
-    (m) => !comparedIds.includes(m.model_id)
-  );
-
-  const addModel = (modelId) => {
-    if (!comparedIds.includes(modelId)) {
-      setComparedIds((prev) => [...prev, modelId]);
-    }
-    setDropdownOpen(false);
-  };
+  const comparedModels = trainedModels.filter((m) => !hiddenIds.has(m.model_id));
+  const hiddenCount = trainedModels.length - comparedModels.length;
 
   const removeModel = (modelId) => {
-    setComparedIds((prev) => prev.filter((id) => id !== modelId));
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      next.add(modelId);
+      return next;
+    });
   };
 
-  const addAll = () => {
-    setComparedIds(trainedModels.map((m) => m.model_id));
-    setDropdownOpen(false);
+  const showAll = () => {
+    setHiddenIds(new Set());
   };
 
   const bestModelId = comparison?.best_model_id;
@@ -103,65 +91,34 @@ export default function ModelComparison({ trainedModels, comparison }) {
             Model Comparison
           </h3>
           <span className="text-[10px] font-mono text-muted bg-slate-100 rounded-full px-2 py-0.5">
-            {comparedModels.length} / {trainedModels.length}
+            {comparedModels.length} of {trainedModels.length} shown
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Compare All button */}
-          {availableToAdd.length > 1 && (
-            <button
-              type="button"
-              onClick={addAll}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-muted border border-border rounded-lg px-2.5 py-1 hover:border-primary hover:text-primary transition-colors"
-            >
-              <LayoutGrid className="w-3 h-3" />
-              Compare All
-            </button>
-          )}
-
-          {/* + Compare dropdown */}
-          {availableToAdd.length > 0 && (
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-primary rounded-lg px-3 py-1.5 hover:bg-emerald-700 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Compare
-              </button>
-
-              {dropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setDropdownOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-border rounded-xl shadow-modal py-1 min-w-[180px]">
-                    {availableToAdd.map((model) => (
-                      <button
-                        key={model.model_id}
-                        type="button"
-                        onClick={() => addModel(model.model_id)}
-                        className="w-full text-left px-3 py-2 text-sm text-dark hover:bg-slate-50 transition-colors"
-                      >
-                        {model.model_name || model.model_type}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+        {hiddenCount > 0 && (
+          <button
+            type="button"
+            onClick={showAll}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary border border-primary rounded-lg px-2.5 py-1 hover:bg-primary-bg transition-colors"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Show all ({hiddenCount} hidden)
+          </button>
+        )}
       </div>
 
       {comparedModels.length === 0 ? (
-        <p className="text-sm text-muted text-center py-6">
-          Click <strong>+ Compare</strong> to add models to the comparison
-          table.
-        </p>
+        <div className="text-sm text-muted text-center py-6">
+          All trained models are hidden.{' '}
+          <button
+            type="button"
+            onClick={showAll}
+            className="text-primary font-semibold hover:underline"
+          >
+            Show all
+          </button>
+          {' '}to compare them.
+        </div>
       ) : (
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-sm">
@@ -245,16 +202,15 @@ export default function ModelComparison({ trainedModels, comparison }) {
                         : '--'}
                     </td>
                     <td className="py-2.5 pl-1">
-                      {comparedModels.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeModel(model.model_id)}
-                          className="p-1 text-muted hover:text-red-500 transition-colors rounded"
-                          title="Remove from comparison"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeModel(model.model_id)}
+                        className="p-1 text-muted hover:text-red-500 transition-colors rounded"
+                        title="Hide from comparison"
+                        aria-label={`Hide ${model.model_name || model.model_type} from comparison`}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </td>
                   </tr>
                 );
