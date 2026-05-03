@@ -20,15 +20,18 @@ export default function FeatureImportanceChart({ features }) {
         <h3 className="text-[15px] font-semibold text-dark">Feature importance (SHAP values)</h3>
       </div>
       <div className="px-5 py-4">
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {features.map((feature) => {
             const widthPct = maxImportance > 0 ? (feature.importance / maxImportance) * 100 : 0;
             return (
-              <div key={feature.feature_name} className="flex items-center gap-3">
-                <span className="w-[170px] text-right text-[13px] text-slate-700 shrink-0 truncate">
+              <div key={feature.feature_name} className="flex items-start gap-3">
+                <span
+                  className="w-[220px] text-right text-[13px] text-slate-700 shrink-0 leading-snug pt-1"
+                  title={feature.display_name}
+                >
                   {feature.display_name}
                 </span>
-                <div className="flex-1 h-6 bg-slate-100 rounded-md relative overflow-hidden">
+                <div className="flex-1 h-6 bg-slate-100 rounded-md relative overflow-hidden mt-0.5">
                   <div
                     className="h-full rounded-md transition-all duration-300"
                     style={{
@@ -37,7 +40,7 @@ export default function FeatureImportanceChart({ features }) {
                     }}
                   />
                 </div>
-                <span className="w-12 text-left text-xs font-semibold text-primary font-mono shrink-0">
+                <span className="w-12 text-left text-xs font-semibold text-primary font-mono shrink-0 pt-1.5">
                   {feature.importance.toFixed(3)}
                 </span>
               </div>
