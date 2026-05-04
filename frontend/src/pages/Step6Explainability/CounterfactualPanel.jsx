@@ -120,7 +120,7 @@ export default function CounterfactualPanel() {
         className="bg-white rounded-xl shadow-card border border-border overflow-hidden mt-5"
       >
         <div className="px-5 pt-4 pb-3 border-b border-border flex items-center gap-2">
-          <span className="w-7 h-7 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
+          <span className="w-7 h-7 rounded-md bg-primary-bg text-primary flex items-center justify-center">
             <Activity className="w-4 h-4" />
           </span>
           <div>
@@ -131,12 +131,12 @@ export default function CounterfactualPanel() {
         <div className="px-6 py-7 text-center">
           {selectedPatientIndex !== null && isCounterfactualLoading ? (
             <div className="flex flex-col items-center gap-2.5">
-              <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               <p className="text-sm text-muted">Loading prediction for Patient #{selectedPatientIndex + 1}...</p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 text-muted">
-              <MousePointerClick className="w-5 h-5 text-purple-400" />
+              <MousePointerClick className="w-5 h-5 text-primary/60" />
               <p className="text-sm">Click any patient on the risk map above (or use the dropdown below) to explore counterfactuals.</p>
             </div>
           )}
@@ -169,7 +169,7 @@ export default function CounterfactualPanel() {
     >
       <div className="px-5 pt-4 pb-3 border-b border-border flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
+          <span className="w-7 h-7 rounded-md bg-primary-bg text-primary flex items-center justify-center">
             <Activity className="w-4 h-4" />
           </span>
           <div>
@@ -182,7 +182,7 @@ export default function CounterfactualPanel() {
             type="button"
             onClick={handleAutoFind}
             disabled={autoFindLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary bg-primary-bg hover:bg-primary-bg/70 rounded-lg transition-colors disabled:opacity-50"
           >
             <Zap className="w-3.5 h-3.5" />
             {autoFindLoading ? 'Searching...' : 'Auto-find smallest flip'}
@@ -225,7 +225,7 @@ export default function CounterfactualPanel() {
               <span className="text-sm font-mono text-muted">{(baseline_probability * 100).toFixed(1)}%</span>
             </div>
             {prediction_changed && (
-              <p className="text-xs font-semibold text-purple-700 mt-1.5 flex items-center gap-1">
+              <p className="text-xs font-semibold text-primary mt-1.5 flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> Prediction flipped vs baseline
               </p>
             )}
@@ -234,16 +234,16 @@ export default function CounterfactualPanel() {
       </div>
 
       {autoFindResult && (
-        <div className={clsx('px-5 py-3 border-b border-border', autoFindResult.success ? 'bg-purple-50' : 'bg-amber-50')}>
+        <div className={clsx('px-5 py-3 border-b border-border', autoFindResult.success ? 'bg-primary-bg' : 'bg-amber-50')}>
           <div className="flex items-start gap-2.5">
-            <Sparkles className={clsx('w-4 h-4 shrink-0 mt-0.5', autoFindResult.success ? 'text-purple-600' : 'text-amber-600')} />
+            <Sparkles className={clsx('w-4 h-4 shrink-0 mt-0.5', autoFindResult.success ? 'text-primary' : 'text-amber-600')} />
             <div className="flex-1">
               <p className="text-[13px] text-dark leading-relaxed">{autoFindResult.explanation}</p>
               {autoFindResult.success && (
                 <button
                   type="button"
                   onClick={applyAutoFind}
-                  className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
+                  className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-white bg-primary hover:bg-primary/90 rounded-md transition-colors"
                 >
                   Apply this change
                 </button>
@@ -268,7 +268,7 @@ export default function CounterfactualPanel() {
               const originalIsAtMax = Math.abs(feat.current_value - feat.max_value) < Math.abs(feat.current_value - feat.min_value);
               const originalLabel = originalIsAtMax ? maxLabel : minLabel;
               return (
-                <div key={feat.feature_name} className={clsx('flex items-center justify-between p-3 rounded-lg transition-colors gap-3', isModified ? 'bg-purple-50/60' : 'bg-slate-50')}>
+                <div key={feat.feature_name} className={clsx('flex items-center justify-between p-3 rounded-lg transition-colors gap-3', isModified ? 'bg-primary-bg/60' : 'bg-slate-50')}>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium text-dark truncate block">{feat.display_name}</span>
                     <span className="text-[11px] text-muted">
@@ -286,7 +286,7 @@ export default function CounterfactualPanel() {
                       onClick={() => updateFeatureOverride(feat.feature_name, feat.min_value)}
                       className={clsx(
                         'px-2.5 py-1 text-xs font-medium transition-colors',
-                        !isAtMax ? 'bg-purple-600 text-white' : 'text-muted hover:bg-slate-50'
+                        !isAtMax ? 'bg-primary text-white' : 'text-muted hover:bg-slate-50'
                       )}
                     >
                       {minLabel}
@@ -296,7 +296,7 @@ export default function CounterfactualPanel() {
                       onClick={() => updateFeatureOverride(feat.feature_name, feat.max_value)}
                       className={clsx(
                         'px-2.5 py-1 text-xs font-medium transition-colors border-l border-border',
-                        isAtMax ? 'bg-purple-600 text-white' : 'text-muted hover:bg-slate-50'
+                        isAtMax ? 'bg-primary text-white' : 'text-muted hover:bg-slate-50'
                       )}
                     >
                       {maxLabel}
@@ -309,7 +309,7 @@ export default function CounterfactualPanel() {
             const step = range > 100 ? 1 : range > 10 ? 0.5 : range > 1 ? 0.1 : 0.01;
             const isModified = overrideVal !== undefined && Math.abs(overrideVal - feat.current_value) > 1e-6;
             return (
-              <div key={feat.feature_name} className={clsx('p-3 rounded-lg transition-colors', isModified ? 'bg-purple-50/60' : 'bg-slate-50')}>
+              <div key={feat.feature_name} className={clsx('p-3 rounded-lg transition-colors', isModified ? 'bg-primary-bg/60' : 'bg-slate-50')}>
                 <SliderControl
                   label={feat.display_name}
                   min={feat.min_value}

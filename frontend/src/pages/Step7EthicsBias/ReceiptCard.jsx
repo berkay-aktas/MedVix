@@ -62,10 +62,10 @@ export default function ReceiptCard() {
   };
 
   return (
-    <div className="rounded-xl border border-purple-200 overflow-hidden" style={{ background: 'linear-gradient(135deg, #FAF5FF 0%, #F5F3FF 50%, #FDF4FF 100%)' }}>
+    <div className="rounded-xl border border-border bg-white overflow-hidden">
       <div className="px-5 pt-4 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: 'rgba(139,92,246,0.15)', color: '#7c3aed' }}>
+          <span className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 bg-primary-bg text-primary">
             <Receipt className="w-4 h-4" />
           </span>
           <div>
@@ -78,7 +78,7 @@ export default function ReceiptCard() {
             type="button"
             onClick={handleCopy}
             disabled={!data}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-purple-700 bg-white/70 hover:bg-white border border-purple-200 rounded-lg transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary bg-primary-bg hover:bg-primary-bg/70 rounded-lg transition-colors disabled:opacity-50"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied' : 'Copy'}
@@ -87,7 +87,7 @@ export default function ReceiptCard() {
             type="button"
             onClick={fetchReceipt}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-purple-700 bg-white/70 hover:bg-white border border-purple-200 rounded-lg transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-primary bg-primary-bg hover:bg-primary-bg/70 rounded-lg transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
