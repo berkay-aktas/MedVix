@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
-import { Activity, Zap, RotateCcw, Sparkles } from 'lucide-react';
+import { Activity, Zap, RotateCcw, Sparkles, MousePointerClick } from 'lucide-react';
 import api from '../../utils/api';
 import useDataStore from '../../stores/useDataStore';
 import useMLStore from '../../stores/useMLStore';
 import useExplainabilityStore from '../../stores/useExplainabilityStore';
 import SliderControl from '../../components/ui/SliderControl';
-import ToggleSwitch from '../../components/ui/ToggleSwitch';
 
 export default function CounterfactualPanel() {
   const sessionId = useDataStore((s) => s.sessionId);
@@ -28,6 +27,8 @@ export default function CounterfactualPanel() {
   const debounceRef = useRef(null);
   const reqIdRef = useRef(0);
   const initializedRef = useRef(false);
+  const wantScrollRef = useRef(false);
+  const sectionRef = useRef(null);
   const [autoFindLoading, setAutoFindLoading] = useState(false);
 
   const fetchPrediction = async (overrides) => {
@@ -59,8 +60,19 @@ export default function CounterfactualPanel() {
       return;
     }
     resetFeatureOverrides();
+    wantScrollRef.current = true;
     fetchPrediction({});
   }, [selectedPatientIndex, sessionId, activeModelResult?.model_id]);
+
+  // Scroll the panel into view once data lands after a patient selection.
+  useEffect(() => {
+    if (counterfactualData && wantScrollRef.current && sectionRef.current) {
+      wantScrollRef.current = false;
+      const NAV_OFFSET = 72; // sticky navbar (h-14 = 56px) + breathing room
+      const top = sectionRef.current.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  }, [counterfactualData]);
 
   useEffect(() => {
     if (!initializedRef.current) return;
@@ -100,7 +112,38 @@ export default function CounterfactualPanel() {
     }
   };
 
-  if (selectedPatientIndex === null || !counterfactualData) return null;
+  // Always-visible card — empty state when no patient selected, loading state mid-fetch.
+  if (selectedPatientIndex === null || !counterfactualData) {
+    return (
+      <section
+        ref={sectionRef}
+        className="bg-white rounded-xl shadow-card border border-border overflow-hidden mt-5"
+      >
+        <div className="px-5 pt-4 pb-3 border-b border-border flex items-center gap-2">
+          <span className="w-7 h-7 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
+            <Activity className="w-4 h-4" />
+          </span>
+          <div>
+            <h3 className="text-[15px] font-semibold text-dark">Counterfactual Explorer</h3>
+            <p className="text-xs text-muted">Drag sliders to see how a single patient's prediction would change.</p>
+          </div>
+        </div>
+        <div className="px-6 py-7 text-center">
+          {selectedPatientIndex !== null && isCounterfactualLoading ? (
+            <div className="flex flex-col items-center gap-2.5">
+              <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-muted">Loading prediction for Patient #{selectedPatientIndex + 1}...</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-muted">
+              <MousePointerClick className="w-5 h-5 text-purple-400" />
+              <p className="text-sm">Click any patient on the risk map above (or use the dropdown below) to explore counterfactuals.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   const {
     probability,
@@ -120,7 +163,10 @@ export default function CounterfactualPanel() {
   };
 
   return (
-    <section className="bg-white rounded-xl shadow-card border border-border overflow-hidden mt-5 animate-fade-in">
+    <section
+      ref={sectionRef}
+      className="bg-white rounded-xl shadow-card border border-border overflow-hidden mt-5 animate-fade-in"
+    >
       <div className="px-5 pt-4 pb-3 border-b border-border flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="w-7 h-7 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -214,21 +260,48 @@ export default function CounterfactualPanel() {
             const overrideVal = featureOverrides[feat.feature_name];
             const currentValue = overrideVal !== undefined ? overrideVal : feat.current_value;
             if (feat.feature_type === 'binary') {
-              const enabled = Math.abs(currentValue - feat.max_value) < Math.abs(currentValue - feat.min_value);
+              const isAtMax = Math.abs(currentValue - feat.max_value) < Math.abs(currentValue - feat.min_value);
               const isModified = overrideVal !== undefined && Math.abs(overrideVal - feat.current_value) > 1e-6;
+              const minLabel = feat.min_label || formatVal(feat.min_value);
+              const maxLabel = feat.max_label || formatVal(feat.max_value);
+              const currentLabel = isAtMax ? maxLabel : minLabel;
+              const originalIsAtMax = Math.abs(feat.current_value - feat.max_value) < Math.abs(feat.current_value - feat.min_value);
+              const originalLabel = originalIsAtMax ? maxLabel : minLabel;
               return (
-                <div key={feat.feature_name} className={clsx('flex items-center justify-between p-3 rounded-lg transition-colors', isModified ? 'bg-purple-50/60' : 'bg-slate-50')}>
-                  <div className="flex-1 min-w-0 mr-3">
+                <div key={feat.feature_name} className={clsx('flex items-center justify-between p-3 rounded-lg transition-colors gap-3', isModified ? 'bg-purple-50/60' : 'bg-slate-50')}>
+                  <div className="flex-1 min-w-0">
                     <span className="text-sm font-medium text-dark truncate block">{feat.display_name}</span>
-                    <span className="text-[11px] font-mono text-muted">
-                      Now: {formatVal(currentValue)} (was {formatVal(feat.current_value)})
+                    <span className="text-[11px] text-muted">
+                      Now: <span className="font-semibold text-dark">{currentLabel}</span>
+                      {isModified && <> <span className="text-muted">(was {originalLabel})</span></>}
                     </span>
                   </div>
-                  <ToggleSwitch
-                    enabled={enabled}
-                    onChange={(newEnabled) => updateFeatureOverride(feat.feature_name, newEnabled ? feat.max_value : feat.min_value)}
-                    label={feat.display_name}
-                  />
+                  <div
+                    role="group"
+                    aria-label={feat.display_name}
+                    className="inline-flex rounded-lg overflow-hidden border border-border bg-white shrink-0"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => updateFeatureOverride(feat.feature_name, feat.min_value)}
+                      className={clsx(
+                        'px-2.5 py-1 text-xs font-medium transition-colors',
+                        !isAtMax ? 'bg-purple-600 text-white' : 'text-muted hover:bg-slate-50'
+                      )}
+                    >
+                      {minLabel}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateFeatureOverride(feat.feature_name, feat.max_value)}
+                      className={clsx(
+                        'px-2.5 py-1 text-xs font-medium transition-colors border-l border-border',
+                        isAtMax ? 'bg-purple-600 text-white' : 'text-muted hover:bg-slate-50'
+                      )}
+                    >
+                      {maxLabel}
+                    </button>
+                  </div>
                 </div>
               );
             }

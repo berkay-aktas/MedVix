@@ -162,8 +162,11 @@ export default function Step6Explainability() {
       {/* Patient Risk Map — headline visual */}
       <PatientRiskMap />
 
+      {/* Counterfactual Explorer — visible immediately, populates on patient click */}
+      <CounterfactualPanel />
+
       {/* Two-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-5 mt-5">
         {/* Left: Feature Importance */}
         <FeatureImportanceChart features={featureImportance} />
 
@@ -185,9 +188,6 @@ export default function Step6Explainability() {
           </div>
         </div>
       </div>
-
-      {/* Counterfactual Explorer — interactive what-if (only when patient selected) */}
-      <CounterfactualPanel />
 
       {/* What-if Info Banner */}
       {waterfallData && waterfallData.bars.length > 0 && (
