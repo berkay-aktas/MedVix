@@ -12,6 +12,7 @@ import TrainingDataChart from './TrainingDataChart';
 import EUChecklist from './EUChecklist';
 import CaseStudies from './CaseStudies';
 import SummaryCard from './SummaryCard';
+import ReceiptCard from './ReceiptCard';
 
 /**
  * Step7 Ethics Bias component for Step 7 (Ethics & Bias Audit) of the MedVix pipeline.
@@ -124,6 +125,9 @@ export default function Step7EthicsBias() {
 
         {/* AI Failure Case Studies */}
         <CaseStudies />
+
+        {/* Plain-English Pipeline Receipt */}
+        <ReceiptCard />
 
         {/* Summary & Certificate Download */}
         <SummaryCard biasAnalysis={biasAnalysis} domainName={domainName} />
