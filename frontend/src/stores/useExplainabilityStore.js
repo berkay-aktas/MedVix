@@ -13,6 +13,11 @@ const useExplainabilityStore = create((set) => ({
   patientMapData: null,         // PatientMapResponse from backend
   isMapLoading: false,
   mapColorMode: 'probability',  // 'probability' | 'sex' | 'age'
+  // Counterfactual Explorer state
+  counterfactualData: null,     // CounterfactualResponse: { probability, predicted_class, baseline_*, prediction_changed, feature_ranges }
+  isCounterfactualLoading: false,
+  featureOverrides: {},         // local map of feature_name -> new value (original scale)
+  autoFindResult: null,         // AutoFindResponse | null
 
   setFeatureImportance: (data) => set({
     featureImportance: data.feature_importance,
@@ -27,6 +32,14 @@ const useExplainabilityStore = create((set) => ({
   setPatientMapData: (data) => set({ patientMapData: data }),
   setIsMapLoading: (loading) => set({ isMapLoading: loading }),
   setMapColorMode: (mode) => set({ mapColorMode: mode }),
+  setCounterfactualData: (data) => set({ counterfactualData: data }),
+  setIsCounterfactualLoading: (loading) => set({ isCounterfactualLoading: loading }),
+  setFeatureOverrides: (overrides) => set({ featureOverrides: overrides }),
+  updateFeatureOverride: (name, value) => set((state) => ({
+    featureOverrides: { ...state.featureOverrides, [name]: value },
+  })),
+  resetFeatureOverrides: () => set({ featureOverrides: {}, autoFindResult: null }),
+  setAutoFindResult: (result) => set({ autoFindResult: result }),
   resetExplainability: () => set({
     featureImportance: null,
     senseCheckText: '',
@@ -39,6 +52,10 @@ const useExplainabilityStore = create((set) => ({
     patientMapData: null,
     isMapLoading: false,
     mapColorMode: 'probability',
+    counterfactualData: null,
+    isCounterfactualLoading: false,
+    featureOverrides: {},
+    autoFindResult: null,
   }),
 }));
 
