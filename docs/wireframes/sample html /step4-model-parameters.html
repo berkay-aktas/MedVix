@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>MedVix - Step 4: Model &amp; Parameters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #F8FAFC;
+    color: #334155;
+    line-height: 1.5;
+    width: 1440px;
+    min-height: 900px;
+    overflow-x: hidden;
+  }
+
+  /* ── Navbar ── */
+  .navbar {
+    height: 56px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar-left { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #059669, #10B981);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 16px; letter-spacing: -0.5px;
+  }
+  .logo-text { font-weight: 700; font-size: 16px; color: #1E293B; }
+  .logo-sub { font-size: 13px; color: #64748B; margin-left: 2px; }
+  .btn-help {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: #64748B; background: transparent;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+    padding: 6px 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-help:hover { border-color: #CBD5E1; color: #334155; }
+
+  /* ── Stepper ── */
+  .stepper-wrapper {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-top: none;
+    padding: 16px 32px;
+  }
+  .stepper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    position: relative;
+    text-align: center;
+  }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: calc(50% + 18px);
+    width: calc(100% - 36px);
+    height: 2px;
+    background: #E2E8F0;
+  }
+  .step-item.done:not(:last-child)::after { background: #059669; }
+  .step-circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; position: relative; z-index: 2;
+    background: #F1F5F9; color: #94A3B8; border: 2px solid #E2E8F0;
+  }
+  .step-item.done .step-circle {
+    background: #ECFDF5; color: #059669; border-color: #059669;
+  }
+  .step-item.active .step-circle {
+    background: #059669; color: #fff; border-color: #059669;
+  }
+  .step-label { font-size: 11.5px; font-weight: 600; color: #94A3B8; line-height: 1.3; }
+  .step-sublabel { font-size: 10px; color: #94A3B8; margin-top: -4px; }
+  .step-item.done .step-label { color: #059669; }
+  .step-item.active .step-label { color: #059669; }
+  .step-item.active .step-sublabel { color: #64748B; }
+
+  /* ── Domain Pills ── */
+  .domain-bar {
+    padding: 12px 32px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    background: #F8FAFC;
+  }
+  .domain-bar::-webkit-scrollbar { display: none; }
+  .pill {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 500;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    color: #64748B;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .pill:hover { border-color: #CBD5E1; color: #334155; }
+  .pill.active {
+    background: #059669; color: #FFFFFF; border-color: #059669;
+  }
+
+  /* ── Main Content ── */
+  .main-content { padding: 24px 32px 20px; }
+  .screen-header { margin-bottom: 24px; }
+  .step-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    color: #059669; background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .screen-title { font-size: 22px; font-weight: 700; color: #1E293B; margin-bottom: 4px; }
+  .screen-subtitle { font-size: 14px; color: #64748B; max-width: 640px; }
+
+  /* ── Model Grid ── */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .model-card {
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .model-card:hover { border-color: #CBD5E1; box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06); }
+  .model-card.selected {
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+  }
+  .model-card-header { display: flex; align-items: center; justify-content: space-between; }
+  .model-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: #F1F5F9; color: #64748B;
+  }
+  .model-card.selected .model-icon { background: #ECFDF5; color: #059669; }
+  .selected-badge {
+    font-size: 11px; font-weight: 600;
+    color: #059669; background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    padding: 2px 10px; border-radius: 999px;
+  }
+  .model-name { font-size: 15px; font-weight: 700; color: #1E293B; }
+  .model-full-name { font-size: 12px; font-weight: 500; color: #64748B; margin-top: -6px; }
+  .model-desc { font-size: 13px; color: #64748B; line-height: 1.45; }
+  .model-select-area {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #F1F5F9;
+  }
+  .btn-select {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px; font-weight: 600;
+    color: #64748B; background: #F8FAFC;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+    padding: 7px 16px; cursor: pointer; width: 100%;
+    transition: all 0.15s;
+  }
+  .btn-select:hover { background: #F1F5F9; color: #334155; }
+  .model-card.selected .btn-select {
+    background: #059669; color: #fff; border-color: #059669;
+  }
+
+  /* ── Parameter Panel ── */
+  .param-panel {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .param-title {
+    font-size: 16px; font-weight: 700; color: #1E293B;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 20px;
+  }
+  .param-title svg { color: #059669; }
+  .param-row { margin-bottom: 20px; }
+  .param-row:last-child { margin-bottom: 0; }
+  .param-label-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .param-label {
+    font-size: 13.5px; font-weight: 600; color: #1E293B;
+  }
+  .param-value-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600;
+    color: #059669; background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    padding: 2px 10px; border-radius: 6px;
+  }
+  .slider-track {
+    width: 100%; height: 6px; border-radius: 3px;
+    background: #E2E8F0; position: relative;
+    margin-bottom: 6px;
+  }
+  .slider-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, #059669, #10B981);
+  }
+  .slider-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #FFFFFF; border: 2.5px solid #059669;
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .slider-labels {
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: #94A3B8;
+  }
+  .param-hint {
+    font-size: 12px; color: #64748B; margin-top: 6px;
+    display: flex; align-items: flex-start; gap: 6px;
+  }
+  .param-hint svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* Dropdown */
+  .param-dropdown {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: #1E293B; background: #FFFFFF;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+    padding: 8px 14px; width: 260px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex; align-items: center; gap: 12px;
+    padding-top: 6px;
+  }
+  .toggle-track {
+    width: 40px; height: 22px; border-radius: 11px;
+    background: #059669; position: relative; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .toggle-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #FFFFFF; position: absolute;
+    top: 3px; right: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+  .toggle-label { font-size: 13px; font-weight: 500; color: #1E293B; }
+
+  /* ── Comparison Table ── */
+  .comparison-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .comparison-title {
+    font-size: 16px; font-weight: 700; color: #1E293B;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .comparison-title svg { color: #059669; }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th {
+    font-size: 11px; font-weight: 600; color: #64748B;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    text-align: left; padding: 10px 14px;
+    border-bottom: 2px solid #E2E8F0;
+    background: #F8FAFC;
+  }
+  .comp-table th:first-child { border-radius: 8px 0 0 0; }
+  .comp-table th:last-child { border-radius: 0 8px 0 0; }
+  .comp-table td {
+    font-size: 13px; color: #334155; padding: 11px 14px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table tr.highlight-row { background: #ECFDF5; }
+  .comp-table tr.highlight-row td:first-child { font-weight: 600; color: #059669; }
+  .rating-pill {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 10px; border-radius: 999px;
+  }
+  .rating-green { background: #ECFDF5; color: #059669; }
+  .rating-amber { background: #FFFBEB; color: #D97706; }
+  .rating-red { background: #FEF2F2; color: #DC2626; }
+
+  /* ── Footer ── */
+  .footer {
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    bottom: 0;
+  }
+  .btn-outline {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px; font-weight: 600;
+    color: #334155; background: #FFFFFF;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+    padding: 9px 20px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-outline:hover { background: #F8FAFC; border-color: #CBD5E1; }
+  .footer-step {
+    font-size: 13px; font-weight: 500; color: #64748B;
+  }
+  .btn-primary {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px; font-weight: 600;
+    color: #FFFFFF; background: #059669;
+    border: none; border-radius: 8px;
+    padding: 9px 22px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #047857; }
+
+  /* Params grid layout */
+  .params-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .params-grid .param-row { margin-bottom: 0; }
+
+  /* Divider */
+  .param-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: #F1F5F9;
+    margin: 2px 0;
+  }
+</style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- ════ NAVBAR ════ -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <div class="logo-mark">M</div>
+    <span class="logo-text">MedVix</span>
+    <span class="logo-sub">&middot; ML for Healthcare</span>
+  </div>
+  <button class="btn-help">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+    Help
+  </button>
+</nav>
+
+<!-- ════ STEPPER ════ -->
+<div class="stepper-wrapper">
+  <div class="stepper">
+    <!-- Step 1 - done -->
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Clinical Context</span>
+    </div>
+    <!-- Step 2 - done -->
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Data Exploration</span>
+    </div>
+    <!-- Step 3 - done -->
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Data Preparation</span>
+    </div>
+    <!-- Step 4 - active -->
+    <div class="step-item active">
+      <div class="step-circle">4</div>
+      <span class="step-label">Model &amp; Parameters</span>
+    </div>
+    <!-- Step 5 -->
+    <div class="step-item">
+      <div class="step-circle">5</div>
+      <span class="step-label">Results</span>
+    </div>
+    <!-- Step 6 -->
+    <div class="step-item">
+      <div class="step-circle">6</div>
+      <span class="step-label">Explainability</span>
+    </div>
+    <!-- Step 7 -->
+    <div class="step-item">
+      <div class="step-circle">7</div>
+      <span class="step-label">Ethics &amp; Bias</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DOMAIN PILLS ════ -->
+<div class="domain-bar">
+  <span class="pill active">Cardiology</span>
+  <span class="pill">Radiology</span>
+  <span class="pill">Nephrology</span>
+  <span class="pill">Oncology-Breast</span>
+  <span class="pill">Neurology-Parkinson</span>
+  <span class="pill">Endocrinology-Diabetes</span>
+  <span class="pill">Hepatology-Liver</span>
+  <span class="pill">Cardiology-Stroke</span>
+  <span class="pill">Mental Health</span>
+  <span class="pill">Pulmonology-COPD</span>
+  <span class="pill">Haematology-Anaemia</span>
+  <span class="pill">Dermatology</span>
+  <span class="pill">Ophthalmology</span>
+  <span class="pill">Orthopaedics-Spine</span>
+  <span class="pill">ICU/Sepsis</span>
+  <span class="pill">Obstetrics-Fetal</span>
+  <span class="pill">Cardiology-Arrhythmia</span>
+  <span class="pill">Oncology-Cervical</span>
+  <span class="pill">Thyroid/Endocrine</span>
+  <span class="pill">Pharmacy-Readmission</span>
+</div>
+
+<!-- ════ MAIN CONTENT ════ -->
+<div class="main-content">
+
+  <!-- Screen Header -->
+  <div class="screen-header">
+    <div class="step-tag">Step 4 of 7</div>
+    <h1 class="screen-title">Model &amp; Parameters</h1>
+    <p class="screen-subtitle">Select a machine learning model and tune its hyperparameters. The model will be trained on your prepared data.</p>
+  </div>
+
+  <!-- ── Model Selection Grid ── -->
+  <div class="model-grid">
+    <!-- KNN (selected) -->
+    <div class="model-card selected">
+      <div class="model-card-header">
+        <div class="model-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
+        <span class="selected-badge">Selected</span>
+      </div>
+      <div class="model-name">KNN</div>
+      <div class="model-full-name">K-Nearest Neighbors</div>
+      <div class="model-desc">Classifies by finding the most similar patients in the dataset</div>
+      <div class="model-select-area">
+        <button class="btn-select">Selected</button>
+      </div>
+    </div>
+
+    <!-- SVM -->
+    <div class="model-card">
+      <div class="model-card-header">
+        <div class="model-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="2" y1="2" y2="22"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        </div>
+      </div>
+      <div class="model-name">SVM</div>
+      <div class="model-full-name">Support Vector Machine</div>
+      <div class="model-desc">Finds the optimal boundary between patient groups</div>
+      <div class="model-select-area">
+        <button class="btn-select">Select model</button>
+      </div>
+    </div>
+
+    <!-- Decision Tree -->
+    <div class="model-card">
+      <div class="model-card-header">
+        <div class="model-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6"/><path d="M6 9H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"/><rect x="9" y="3" width="6" height="6" rx="1"/><rect x="3" y="15" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M6 15v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>
+        </div>
+      </div>
+      <div class="model-name">Decision Tree</div>
+      <div class="model-full-name">Decision Tree Classifier</div>
+      <div class="model-desc">Creates a flowchart of clinical yes/no questions</div>
+      <div class="model-select-area">
+        <button class="btn-select">Select model</button>
+      </div>
+    </div>
+
+    <!-- Random Forest -->
+    <div class="model-card">
+      <div class="model-card-header">
+        <div class="model-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 6.06V2"/><path d="M7 14V7"/><path d="M19 14v-2"/><path d="M21 14V9"/><path d="M13 14V8"/><path d="M15 14V4"/><path d="M5 14v-3"/><path d="M11 14V2"/><path d="M3 14v-1"/><path d="M1 22v-3a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v3"/></svg>
+        </div>
+      </div>
+      <div class="model-name">Random Forest</div>
+      <div class="model-full-name">Random Forest Ensemble</div>
+      <div class="model-desc">Combines many decision trees for robust predictions</div>
+      <div class="model-select-area">
+        <button class="btn-select">Select model</button>
+      </div>
+    </div>
+
+    <!-- Logistic Regression -->
+    <div class="model-card">
+      <div class="model-card-header">
+        <div class="model-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20c4-2 7-9 8-14"/><path d="M11 6c1 5 4 12 10 14"/><line x1="3" x2="21" y1="20" y2="20"/></svg>
+        </div>
+      </div>
+      <div class="model-name">Logistic Regression</div>
+      <div class="model-full-name">Logistic Regression Classifier</div>
+      <div class="model-desc">Calculates probability using a mathematical curve</div>
+      <div class="model-select-area">
+        <button class="btn-select">Select model</button>
+      </div>
+    </div>
+
+    <!-- Naive Bayes -->
+    <div class="model-card">
+      <div class="model-card-header">
+        <div class="model-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m6.8 15-3.5 2"/><path d="m20.7 7-3.5 2"/><path d="M6.8 9 3.3 7"/><path d="m20.7 17-3.5-2"/><circle cx="12" cy="12" r="6"/></svg>
+        </div>
+      </div>
+      <div class="model-name">Naive Bayes</div>
+      <div class="model-full-name">Gaussian Naive Bayes</div>
+      <div class="model-desc">Uses probability theory assuming feature independence</div>
+      <div class="model-select-area">
+        <button class="btn-select">Select model</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Parameter Panel ── -->
+  <div class="param-panel">
+    <div class="param-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/></svg>
+      KNN Parameters
+    </div>
+
+    <div class="params-grid">
+      <!-- K slider -->
+      <div class="param-row">
+        <div class="param-label-row">
+          <span class="param-label">K &mdash; Number of neighbors</span>
+          <span class="param-value-badge">5</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" style="width: 16.7%; border-radius: 3px;"></div>
+          <div class="slider-thumb" style="left: 16.7%;"></div>
+        </div>
+        <div class="slider-labels">
+          <span>1</span>
+          <span>5</span>
+          <span>10</span>
+          <span>15</span>
+          <span>20</span>
+          <span>25</span>
+        </div>
+        <div class="param-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Low K = focuses on very similar cases. High K = considers many patients.
+        </div>
+      </div>
+
+      <!-- Distance Metric -->
+      <div class="param-row">
+        <div class="param-label-row">
+          <span class="param-label">Distance metric</span>
+        </div>
+        <select class="param-dropdown">
+          <option selected>Euclidean</option>
+          <option>Manhattan</option>
+          <option>Minkowski</option>
+        </select>
+        <div class="param-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          Determines how "distance" between patients is calculated.
+        </div>
+      </div>
+
+      <div class="param-divider"></div>
+
+      <!-- Auto-retrain toggle -->
+      <div class="param-row" style="grid-column: 1 / -1;">
+        <div class="toggle-row">
+          <div class="toggle-track">
+            <div class="toggle-thumb"></div>
+          </div>
+          <span class="toggle-label">Auto-retrain on parameter change</span>
+          <span style="font-size: 12px; color: #059669; font-weight: 500; background: #ECFDF5; padding: 2px 8px; border-radius: 999px;">Enabled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Comparison Table ── -->
+  <div class="comparison-card">
+    <div class="comparison-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+      Quick comparison
+    </div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Speed</th>
+          <th>Interpretability</th>
+          <th>Handles non-linear</th>
+          <th>Best for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>KNN</td>
+          <td><span class="rating-pill rating-amber">Medium</span></td>
+          <td><span class="rating-pill rating-green">High</span></td>
+          <td><span class="rating-pill rating-green">Yes</span></td>
+          <td style="font-size: 12.5px; color: #64748B;">Small datasets, similarity-based</td>
+        </tr>
+        <tr>
+          <td>SVM</td>
+          <td><span class="rating-pill rating-amber">Medium</span></td>
+          <td><span class="rating-pill rating-red">Low</span></td>
+          <td><span class="rating-pill rating-green">Yes</span></td>
+          <td style="font-size: 12.5px; color: #64748B;">High-dimensional feature spaces</td>
+        </tr>
+        <tr>
+          <td>Decision Tree</td>
+          <td><span class="rating-pill rating-green">Fast</span></td>
+          <td><span class="rating-pill rating-green">High</span></td>
+          <td><span class="rating-pill rating-green">Yes</span></td>
+          <td style="font-size: 12.5px; color: #64748B;">Clinical rule extraction</td>
+        </tr>
+        <tr>
+          <td>Random Forest</td>
+          <td><span class="rating-pill rating-amber">Medium</span></td>
+          <td><span class="rating-pill rating-amber">Medium</span></td>
+          <td><span class="rating-pill rating-green">Yes</span></td>
+          <td style="font-size: 12.5px; color: #64748B;">General purpose, robust results</td>
+        </tr>
+        <tr>
+          <td>Logistic Regression</td>
+          <td><span class="rating-pill rating-green">Fast</span></td>
+          <td><span class="rating-pill rating-green">High</span></td>
+          <td><span class="rating-pill rating-red">No</span></td>
+          <td style="font-size: 12.5px; color: #64748B;">Linear relationships, probability output</td>
+        </tr>
+        <tr>
+          <td>Naive Bayes</td>
+          <td><span class="rating-pill rating-green">Fast</span></td>
+          <td><span class="rating-pill rating-green">High</span></td>
+          <td><span class="rating-pill rating-red">No</span></td>
+          <td style="font-size: 12.5px; color: #64748B;">Text data, independent features</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ════ FOOTER ════ -->
+<div class="footer">
+  <button class="btn-outline">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    Previous
+  </button>
+  <span class="footer-step">Step 4 of 7</span>
+  <button class="btn-primary">
+    Continue
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

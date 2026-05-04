@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>MedVix — Column Mapper Modal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background: #F8FAFC;
+    position: relative;
+  }
+
+  /* ========== BACKGROUND PAGE ========== */
+  .bg-page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  .navbar {
+    height: 56px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 16px;
+  }
+  .navbar-logo {
+    width: 34px;
+    height: 34px;
+    background: #059669;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  .navbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1E293B;
+    letter-spacing: -0.2px;
+  }
+  .navbar-title span { color: #64748B; font-weight: 400; }
+  .navbar-spacer { flex: 1; }
+  .navbar-actions { display: flex; align-items: center; gap: 12px; }
+  .nav-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .stepper-bar {
+    height: 52px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 32px;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #94A3B8;
+    white-space: nowrap;
+  }
+  .step-item.active { background: #ECFDF5; color: #059669; font-weight: 600; }
+  .step-item.done { color: #10B981; }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94A3B8;
+  }
+  .step-item.active .step-num { background: #059669; color: #fff; }
+  .step-item.done .step-num { background: #D1FAE5; color: #059669; }
+  .step-connector { width: 20px; height: 1px; background: #E2E8F0; flex-shrink: 0; }
+
+  .domain-row {
+    padding: 16px 32px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .domain-pill {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .domain-pill.active { border-color: #059669; background: #ECFDF5; color: #059669; font-weight: 600; }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: #CBD5E1; }
+  .domain-pill.active .pill-dot { background: #059669; }
+
+  .bg-content {
+    padding: 24px 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .bg-card {
+    height: 160px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    padding: 24px;
+  }
+  .bg-card-line { height: 10px; border-radius: 4px; background: #F1F5F9; margin-bottom: 10px; }
+  .bg-card-line.short { width: 55%; }
+  .bg-card-line.medium { width: 75%; }
+  .bg-card-line.long { width: 90%; }
+
+  /* ========== OVERLAY ========== */
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ========== MODAL ========== */
+  .modal {
+    width: 800px;
+    max-height: 86vh;
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid #E2E8F0;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1E293B;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+  .modal-subtitle {
+    font-size: 13px;
+    color: #64748B;
+    font-weight: 400;
+    line-height: 1.45;
+  }
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .modal-close svg { width: 16px; height: 16px; color: #64748B; }
+
+  .modal-body {
+    padding: 20px 28px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  /* Info banner */
+  .info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    margin-bottom: 20px;
+  }
+  .info-banner-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #2563EB;
+    margin-top: 1px;
+  }
+  .info-banner-text {
+    font-size: 13px;
+    color: #1E40AF;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  /* Mapping table */
+  .mapping-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .mapping-table thead th {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
+    text-align: left;
+  }
+  .mapping-table thead th:first-child { width: 38%; }
+  .mapping-table thead th:nth-child(2) { width: 8%; text-align: center; }
+  .mapping-table thead th:last-child { width: 54%; }
+
+  .mapping-table tbody tr {
+    transition: background 0.1s;
+  }
+  .mapping-table tbody tr:not(:last-child) td {
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .mapping-table tbody tr:hover {
+    background: #FAFBFC;
+  }
+  .mapping-table tbody tr.target-row {
+    background: #ECFDF5;
+  }
+  .mapping-table tbody tr.target-row:hover {
+    background: #D1FAE5;
+  }
+
+  .mapping-table td {
+    padding: 10px 16px;
+    vertical-align: middle;
+  }
+
+  .csv-col {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    background: #F1F5F9;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+  }
+  .target-row .csv-col {
+    background: #D1FAE5;
+    border-color: #A7F3D0;
+    color: #065F46;
+  }
+
+  .arrow-cell {
+    text-align: center;
+    color: #94A3B8;
+  }
+  .arrow-cell svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .feature-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .select-box {
+    flex: 1;
+    height: 34px;
+    padding: 0 32px 0 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #FFFFFF;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    color: #1E293B;
+    font-weight: 500;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+  }
+  .target-row .select-box {
+    border-color: #059669;
+    background-color: #F0FDF4;
+    color: #065F46;
+    font-weight: 600;
+  }
+
+  .match-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #16A34A;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .match-badge svg {
+    width: 14px;
+    height: 14px;
+    color: #16A34A;
+  }
+  .target-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #059669;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .target-badge svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    border-radius: 10px;
+    background: #F0FDF4;
+    border: 1px solid #BBF7D0;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #16A34A;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+  }
+  .status-text {
+    font-size: 13px;
+    color: #166534;
+    font-weight: 600;
+  }
+
+  /* Footer */
+  .modal-footer {
+    padding: 16px 28px;
+    border-top: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+    background: #FAFBFC;
+  }
+  .btn {
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    transition: background 0.15s;
+  }
+  .btn-outline {
+    background: #FFFFFF;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
+  }
+  .btn-primary {
+    background: #059669;
+    color: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(5,150,105,0.25);
+  }
+</style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- ========== BACKGROUND ========== -->
+<div class="bg-page">
+  <nav class="navbar">
+    <div class="navbar-logo">M</div>
+    <div class="navbar-title">MedVix <span>· ML for Healthcare</span></div>
+    <div class="navbar-spacer"></div>
+    <div class="navbar-actions">
+      <button class="nav-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Help
+      </button>
+      <button class="nav-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        Settings
+      </button>
+      <div class="nav-avatar">B</div>
+    </div>
+  </nav>
+
+  <div class="stepper-bar">
+    <div class="step-item done">
+      <div class="step-num">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      Clinical Context
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item active">
+      <div class="step-num">2</div>
+      Data Exploration
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-num">3</div>Preparation</div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-num">4</div>Model</div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-num">5</div>Results</div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-num">6</div>Explainability</div>
+    <div class="step-connector"></div>
+    <div class="step-item"><div class="step-num">7</div>Ethics</div>
+  </div>
+
+  <div class="domain-row">
+    <div class="domain-pill active"><div class="pill-dot"></div>Cardiology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Radiology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Nephrology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Oncology-Breast</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Neurology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Endocrinology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Hepatology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Cardiology-Stroke</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Mental Health</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Pulmonology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Haematology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Dermatology</div>
+  </div>
+
+  <div class="bg-content">
+    <div class="bg-card">
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line short"></div>
+    </div>
+    <div class="bg-card">
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line medium"></div>
+    </div>
+    <div class="bg-card">
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line long"></div>
+    </div>
+    <div class="bg-card">
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line short"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL OVERLAY ========== -->
+<div class="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Column Mapper</div>
+      <div class="modal-subtitle">Map your CSV columns to the expected clinical features</div>
+      <div class="modal-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <!-- Info banner -->
+      <div class="info-banner">
+        <svg class="info-banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span class="info-banner-text">We detected 13 columns in your uploaded file. Please verify the automatic mappings below.</span>
+      </div>
+
+      <!-- Mapping table -->
+      <table class="mapping-table">
+        <thead>
+          <tr>
+            <th>Your CSV Column</th>
+            <th></th>
+            <th>Maps to Feature</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="csv-col">age</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Age</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">anaemia</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Anaemia</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">creatinine_phosphokinase</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Creatinine Phosphokinase</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">diabetes</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Diabetes</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">ejection_fraction</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Ejection Fraction</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">high_blood_pressure</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>High Blood Pressure</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">platelets</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Platelets</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">serum_creatinine</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Serum Creatinine</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">serum_sodium</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Serum Sodium</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">sex</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Sex</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">smoking</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Smoking</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <tr>
+            <td><span class="csv-col">time</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Follow-up Period</option></select><span class="match-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div></td>
+          </tr>
+          <!-- Target variable row -->
+          <tr class="target-row">
+            <td><span class="csv-col">DEATH_EVENT</span></td>
+            <td class="arrow-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></td>
+            <td><div class="feature-select"><select class="select-box"><option>Target Variable</option></select><span class="target-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Target</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Status bar -->
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        <div class="status-text">13/13 columns mapped &middot; 1 target variable identified</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline">Cancel</button>
+      <button class="btn btn-primary">Apply Mapping</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

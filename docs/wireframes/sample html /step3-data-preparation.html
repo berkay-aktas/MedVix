@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>MedVix - Step 3: Data Preparation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #059669;
+    --primary-lt: #10B981;
+    --primary-bg: #ECFDF5;
+    --dark: #1E293B;
+    --text: #334155;
+    --muted: #64748B;
+    --surface: #FFFFFF;
+    --background: #F8FAFC;
+    --border: #E2E8F0;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --info: #2563EB;
+    --radius-card: 12px;
+    --radius-btn: 8px;
+    --radius-pill: 999px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    width: 1440px;
+    min-height: 900px;
+    margin: 0 auto;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== NAVBAR ===== */
+  .navbar {
+    height: 56px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 32px;
+  }
+  .navbar-left { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #059669, #10B981);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 16px;
+  }
+  .logo-text { font-weight: 700; font-size: 17px; color: var(--dark); }
+  .logo-sub { color: var(--muted); font-size: 13px; }
+  .btn-help {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius-btn);
+    background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+  }
+
+  /* ===== STEPPER ===== */
+  .stepper-wrapper {
+    background: var(--surface); margin: 16px 32px 0;
+    border-radius: var(--radius-card); box-shadow: var(--shadow); padding: 20px 28px;
+  }
+  .stepper { display: flex; align-items: flex-start; justify-content: space-between; }
+  .step-item {
+    display: flex; flex-direction: column; align-items: center;
+    flex: 1; position: relative; text-align: center;
+  }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: calc(50% + 20px);
+    width: calc(100% - 40px);
+    height: 2px;
+    background: var(--border);
+  }
+  .step-item.done:not(:last-child)::after {
+    background: var(--primary-lt);
+  }
+  .step-circle {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; position: relative; z-index: 2;
+    border: 2px solid var(--border); background: var(--surface); color: var(--muted);
+  }
+  .step-item.active .step-circle { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .step-item.done .step-circle { background: var(--primary-bg); border-color: var(--primary-lt); color: var(--primary); }
+  .step-label { margin-top: 8px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .step-item.active .step-label { color: var(--primary); }
+  .step-item.done .step-label { color: var(--primary); }
+  .step-sublabel { font-size: 11px; color: var(--muted); margin-top: 2px; opacity: 0.8; }
+
+  /* ===== DOMAIN PILLS ===== */
+  .pills-wrapper {
+    margin: 12px 32px 0; padding: 12px 0;
+    display: flex; gap: 8px; overflow-x: auto; white-space: nowrap;
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; border-radius: var(--radius-pill);
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 12.5px; font-weight: 500; flex-shrink: 0;
+  }
+  .pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  /* ===== CONTENT ===== */
+  .content-area { padding: 20px 32px 16px; }
+  .screen-header { margin-bottom: 16px; }
+  .step-tag {
+    display: inline-block; font-size: 12px; font-weight: 600; color: var(--primary);
+    background: var(--primary-bg); padding: 3px 10px; border-radius: var(--radius-pill); margin-bottom: 8px;
+  }
+  .screen-header h1 { font-size: 24px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .screen-header p { font-size: 14px; color: var(--muted); max-width: 700px; line-height: 1.6; }
+
+  .card {
+    background: var(--surface); border-radius: var(--radius-card);
+    box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600; color: var(--dark);
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; background: var(--primary-bg);
+    color: var(--primary); font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+
+  /* Split bar */
+  .split-visual {
+    display: flex; border-radius: var(--radius-btn); overflow: hidden; height: 44px; margin-bottom: 14px;
+  }
+  .split-train {
+    flex: 0 0 80%; background: var(--primary); display: flex; align-items: center;
+    justify-content: center; color: #fff; font-weight: 600; font-size: 14px; gap: 6px;
+  }
+  .split-test {
+    flex: 1; background: var(--info); display: flex; align-items: center;
+    justify-content: center; color: #fff; font-weight: 600; font-size: 14px; gap: 6px;
+  }
+  .slider-row {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 8px;
+  }
+  .slider-label { font-size: 13px; font-weight: 500; color: var(--text); min-width: 100px; }
+  .slider-track {
+    flex: 1; height: 6px; background: var(--border); border-radius: 3px; position: relative;
+  }
+  .slider-fill {
+    position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; background: var(--primary);
+  }
+  .slider-thumb {
+    position: absolute; top: 50%; transform: translate(-50%,-50%);
+    width: 18px; height: 18px; border-radius: 50%; background: var(--surface);
+    border: 2px solid var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .slider-val {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;
+    color: var(--primary); background: var(--primary-bg); padding: 3px 10px;
+    border-radius: var(--radius-pill); min-width: 48px; text-align: center;
+  }
+  .split-meta { font-size: 12.5px; color: var(--muted); }
+  .split-meta strong { color: var(--dark); font-weight: 600; }
+
+  /* Option cards */
+  .options-row { display: flex; gap: 14px; margin-bottom: 8px; }
+  .option-card {
+    flex: 1; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius-card);
+    cursor: pointer; position: relative;
+  }
+  .option-card.selected { border-color: var(--primary); background: var(--primary-bg); }
+  .option-card .check-badge {
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px; border-radius: 50%; background: var(--primary);
+    display: none; align-items: center; justify-content: center; color: #fff;
+  }
+  .option-card.selected .check-badge { display: flex; }
+  .option-card h4 { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 6px; }
+  .option-card p { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .formula {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--dark);
+    background: var(--background); padding: 8px 12px; border-radius: var(--radius-btn);
+    margin-top: 8px; text-align: center; border: 1px solid var(--border);
+  }
+  .option-note {
+    font-size: 12px; color: var(--muted); font-style: italic;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .toggle-switch {
+    width: 44px; height: 24px; border-radius: 12px; background: var(--primary);
+    position: relative; cursor: pointer; flex-shrink: 0;
+  }
+  .toggle-switch .toggle-dot {
+    width: 20px; height: 20px; border-radius: 50%; background: #fff;
+    position: absolute; top: 2px; right: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+  .toggle-label { font-size: 14px; font-weight: 600; color: var(--dark); }
+
+  /* Before/After */
+  .ba-grid { display: flex; gap: 20px; }
+  .ba-col { flex: 1; }
+  .ba-title {
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .ba-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .ba-label { font-size: 12.5px; font-weight: 500; color: var(--text); width: 110px; flex-shrink: 0; }
+  .ba-bar-bg {
+    flex: 1; height: 24px; background: var(--background);
+    border-radius: var(--radius-btn); overflow: hidden; position: relative;
+  }
+  .ba-bar-fill {
+    height: 100%; border-radius: var(--radius-btn);
+    display: flex; align-items: center; padding-left: 8px;
+    font-size: 11px; font-weight: 600; color: #fff;
+  }
+  .ba-bar-fill.green { background: var(--primary); }
+  .ba-bar-fill.red { background: var(--danger); }
+  .ba-bar-fill.red-lt { background: #F87171; }
+  .synthetic-badge {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    background: #FEF3C7; color: #92400E; padding: 2px 7px;
+    border-radius: var(--radius-pill); margin-left: 6px;
+  }
+  .ba-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted);
+    min-width: 32px; text-align: right;
+  }
+
+  .info-banner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; background: #EFF6FF; border: 1px solid #BFDBFE;
+    border-radius: var(--radius-btn); margin-top: 12px;
+  }
+  .info-banner svg { color: var(--info); flex-shrink: 0; }
+  .info-banner p { font-size: 13px; color: #1E40AF; }
+
+  /* Arrow between columns */
+  .ba-arrow {
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; width: 40px; color: var(--muted);
+  }
+
+  /* ===== FOOTER ===== */
+  .footer-bar {
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 14px 32px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-center { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .btn-prev {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 18px; border: 1px solid var(--border); border-radius: var(--radius-btn);
+    background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn-continue {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 22px; border: none; border-radius: var(--radius-btn);
+    background: var(--primary); color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+</style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <div class="logo-mark">M</div>
+    <span class="logo-text">MedVix</span>
+    <span class="logo-sub">&middot; ML for Healthcare</span>
+  </div>
+  <button class="btn-help">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+    Help
+  </button>
+</nav>
+
+<!-- STEPPER -->
+<div class="stepper-wrapper">
+  <div class="stepper">
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="step-label">Clinical Context</div>
+      <div class="step-sublabel">Define problem</div>
+    </div>
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="step-label">Data Exploration</div>
+      <div class="step-sublabel">Upload &amp; inspect</div>
+    </div>
+    <div class="step-item active">
+      <div class="step-circle">3</div>
+      <div class="step-label">Data Preparation</div>
+      <div class="step-sublabel">Clean &amp; transform</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle">4</div>
+      <div class="step-label">Model &amp; Parameters</div>
+      <div class="step-sublabel">Configure ML</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle">5</div>
+      <div class="step-label">Results</div>
+      <div class="step-sublabel">Evaluate</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle">6</div>
+      <div class="step-label">Explainability</div>
+      <div class="step-sublabel">SHAP analysis</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle">7</div>
+      <div class="step-label">Ethics &amp; Bias</div>
+      <div class="step-sublabel">Fairness audit</div>
+    </div>
+  </div>
+</div>
+
+<!-- DOMAIN PILLS -->
+<div class="pills-wrapper">
+  <div class="pill active">Cardiology</div>
+  <div class="pill">Radiology</div>
+  <div class="pill">Nephrology</div>
+  <div class="pill">Oncology-Breast</div>
+  <div class="pill">Neurology-Parkinson</div>
+  <div class="pill">Endocrinology-Diabetes</div>
+  <div class="pill">Hepatology-Liver</div>
+  <div class="pill">Cardiology-Stroke</div>
+  <div class="pill">Mental Health</div>
+  <div class="pill">Pulmonology-COPD</div>
+  <div class="pill">Haematology-Anaemia</div>
+  <div class="pill">Dermatology</div>
+  <div class="pill">Ophthalmology</div>
+  <div class="pill">Orthopaedics-Spine</div>
+  <div class="pill">ICU/Sepsis</div>
+  <div class="pill">Obstetrics-Fetal</div>
+  <div class="pill">Cardiology-Arrhythmia</div>
+  <div class="pill">Oncology-Cervical</div>
+  <div class="pill">Thyroid/Endocrine</div>
+  <div class="pill">Pharmacy-Readmission</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-area">
+  <div class="screen-header">
+    <div class="step-tag">Step 3 of 7</div>
+    <h1>Data Preparation</h1>
+    <p>Configure how the dataset should be split, cleaned, normalised, and balanced before training a machine learning model.</p>
+  </div>
+
+  <!-- SECTION 1: Train/Test Split -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">1</span>
+      Train / Test Split
+    </div>
+    <div class="split-visual">
+      <div class="split-train">Train 80%</div>
+      <div class="split-test">Test 20%</div>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">Train ratio</span>
+      <div class="slider-track">
+        <div class="slider-fill" style="width:75%;"></div>
+        <div class="slider-thumb" style="left:75%;"></div>
+      </div>
+      <span class="slider-val">80%</span>
+    </div>
+    <div class="split-meta">
+      Training: <strong>239 samples</strong> &middot; Testing: <strong>60 samples</strong>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Missing Value Strategy -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">2</span>
+      Missing Value Strategy
+    </div>
+    <div class="options-row">
+      <div class="option-card selected">
+        <div class="check-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>Median / Mode Imputation</h4>
+        <p>Replace missing numeric values with median, categorical with mode. Preserves dataset size.</p>
+      </div>
+      <div class="option-card">
+        <div class="check-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>Remove Rows</h4>
+        <p>Drop any row containing missing values. Simple but may reduce dataset size significantly.</p>
+      </div>
+      <div class="option-card">
+        <div class="check-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>KNN Imputation</h4>
+        <p>Use K-nearest neighbors to estimate missing values based on similar patient records.</p>
+      </div>
+    </div>
+    <div class="option-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      Current dataset has <strong style="color:var(--primary);margin:0 3px;">0</strong> missing values
+    </div>
+  </div>
+
+  <!-- SECTION 3: Normalisation -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">3</span>
+      Normalisation
+    </div>
+    <div class="options-row" style="max-width:700px;">
+      <div class="option-card selected">
+        <div class="check-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>Z-Score (Standard)</h4>
+        <p>Centres data around mean with unit variance. Best for normally distributed features.</p>
+        <div class="formula">(x - &mu;) / &sigma;</div>
+      </div>
+      <div class="option-card">
+        <div class="check-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4>Min-Max Scaling</h4>
+        <p>Scales features to a fixed range [0, 1]. Best for bounded features.</p>
+        <div class="formula">(x - min) / (max - min)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: Class Balancing (SMOTE) -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">4</span>
+      Class Balancing (SMOTE)
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-switch">
+        <div class="toggle-dot"></div>
+      </div>
+      <span class="toggle-label">Apply SMOTE oversampling</span>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-col">
+        <div class="ba-title">Before</div>
+        <div class="ba-bar-row">
+          <span class="ba-label">Survived</span>
+          <div class="ba-bar-bg">
+            <div class="ba-bar-fill green" style="width:68%;">203</div>
+          </div>
+          <span class="ba-count">203</span>
+        </div>
+        <div class="ba-bar-row">
+          <span class="ba-label">Deceased</span>
+          <div class="ba-bar-bg">
+            <div class="ba-bar-fill red" style="width:32%;">96</div>
+          </div>
+          <span class="ba-count">96</span>
+        </div>
+      </div>
+
+      <div class="ba-arrow">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </div>
+
+      <div class="ba-col">
+        <div class="ba-title">After SMOTE</div>
+        <div class="ba-bar-row">
+          <span class="ba-label">Survived</span>
+          <div class="ba-bar-bg">
+            <div class="ba-bar-fill green" style="width:50%;">203</div>
+          </div>
+          <span class="ba-count">203</span>
+        </div>
+        <div class="ba-bar-row">
+          <span class="ba-label">Deceased</span>
+          <div class="ba-bar-bg">
+            <div class="ba-bar-fill red-lt" style="width:50%;background:#F87171;">203</div>
+          </div>
+          <span class="ba-count">203 <span class="synthetic-badge">+107 synthetic</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      <p>SMOTE (Synthetic Minority Over-sampling Technique) creates synthetic minority samples by interpolating between existing data points, helping the model learn balanced decision boundaries.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-bar">
+  <button class="btn-prev">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    Previous
+  </button>
+  <span class="footer-center">Step 3 of 7</span>
+  <button class="btn-continue">
+    Continue
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

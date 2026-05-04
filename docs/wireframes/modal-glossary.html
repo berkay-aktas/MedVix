@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>MedVix — Medical Glossary Modal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    width: 1440px;
+    height: 900px;
+    overflow: hidden;
+    background: #F8FAFC;
+    position: relative;
+  }
+
+  /* ========== BACKGROUND PAGE (Step 1) ========== */
+  .bg-page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  /* Navbar */
+  .navbar {
+    height: 56px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    gap: 16px;
+  }
+  .navbar-logo {
+    width: 34px;
+    height: 34px;
+    background: #059669;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+  }
+  .navbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1E293B;
+    letter-spacing: -0.2px;
+  }
+  .navbar-title span {
+    color: #64748B;
+    font-weight: 400;
+  }
+  .navbar-spacer { flex: 1; }
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* Stepper */
+  .stepper-bar {
+    height: 52px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 32px;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #94A3B8;
+    white-space: nowrap;
+  }
+  .step-item.active {
+    background: #ECFDF5;
+    color: #059669;
+    font-weight: 600;
+  }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94A3B8;
+  }
+  .step-item.active .step-num {
+    background: #059669;
+    color: #fff;
+  }
+  .step-connector {
+    width: 20px;
+    height: 1px;
+    background: #E2E8F0;
+    flex-shrink: 0;
+  }
+
+  /* Domain pills */
+  .domain-row {
+    padding: 16px 32px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .domain-pill {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .domain-pill.active {
+    border-color: #059669;
+    background: #ECFDF5;
+    color: #059669;
+    font-weight: 600;
+  }
+  .pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #CBD5E1;
+  }
+  .domain-pill.active .pill-dot {
+    background: #059669;
+  }
+
+  /* Placeholder cards behind modal */
+  .bg-content {
+    padding: 24px 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .bg-card {
+    height: 160px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    padding: 24px;
+  }
+  .bg-card-line {
+    height: 10px;
+    border-radius: 4px;
+    background: #F1F5F9;
+    margin-bottom: 10px;
+  }
+  .bg-card-line.short { width: 55%; }
+  .bg-card-line.medium { width: 75%; }
+  .bg-card-line.long { width: 90%; }
+
+  /* ========== OVERLAY ========== */
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ========== MODAL ========== */
+  .modal {
+    width: 720px;
+    max-height: 80vh;
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .modal-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid #E2E8F0;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1E293B;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+  .modal-subtitle {
+    font-size: 13px;
+    color: #64748B;
+    font-weight: 400;
+    line-height: 1.45;
+  }
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .modal-close svg {
+    width: 16px;
+    height: 16px;
+    color: #64748B;
+  }
+
+  /* Search */
+  .modal-search {
+    padding: 16px 28px 0;
+    flex-shrink: 0;
+  }
+  .search-input-wrap {
+    position: relative;
+  }
+  .search-input-wrap svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: #94A3B8;
+  }
+  .search-input {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0 16px 0 40px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: #1E293B;
+    background: #F8FAFC;
+    outline: none;
+  }
+  .search-input::placeholder {
+    color: #94A3B8;
+  }
+
+  /* Body */
+  .modal-body {
+    padding: 20px 28px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .glossary-card {
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid #E2E8F0;
+    background: #FAFBFC;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .glossary-card:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .glossary-term {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E293B;
+    margin-bottom: 4px;
+    letter-spacing: -0.1px;
+  }
+  .glossary-def {
+    font-size: 13px;
+    color: #64748B;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  /* Tag pills on some terms */
+  .glossary-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-left: 6px;
+    position: relative;
+    top: -1px;
+  }
+  .glossary-tag.clinical {
+    background: #ECFDF5;
+    color: #059669;
+  }
+  .glossary-tag.ml {
+    background: #EFF6FF;
+    color: #2563EB;
+  }
+
+  /* Footer */
+  .modal-footer {
+    padding: 16px 28px;
+    border-top: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: #FAFBFC;
+  }
+  .footer-count {
+    font-size: 13px;
+    color: #94A3B8;
+    font-weight: 400;
+  }
+  .btn {
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  .btn-outline {
+    background: #FFFFFF;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
+  }
+  .btn-primary {
+    background: #059669;
+    color: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(5,150,105,0.25);
+  }
+</style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- ========== BACKGROUND: Step 1 page ========== -->
+<div class="bg-page">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-logo">M</div>
+    <div class="navbar-title">MedVix <span>· ML for Healthcare</span></div>
+    <div class="navbar-spacer"></div>
+    <div class="navbar-actions">
+      <button class="nav-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Help
+      </button>
+      <button class="nav-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        Settings
+      </button>
+      <div class="nav-avatar">B</div>
+    </div>
+  </nav>
+
+  <!-- Stepper -->
+  <div class="stepper-bar">
+    <div class="step-item active">
+      <div class="step-num">1</div>
+      Clinical Context
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      Data Exploration
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      Preparation
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-num">4</div>
+      Model
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-num">5</div>
+      Results
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-num">6</div>
+      Explainability
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item">
+      <div class="step-num">7</div>
+      Ethics
+    </div>
+  </div>
+
+  <!-- Domain pills -->
+  <div class="domain-row">
+    <div class="domain-pill active"><div class="pill-dot"></div>Cardiology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Radiology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Nephrology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Oncology-Breast</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Neurology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Endocrinology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Hepatology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Cardiology-Stroke</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Mental Health</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Pulmonology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Haematology</div>
+    <div class="domain-pill"><div class="pill-dot"></div>Dermatology</div>
+  </div>
+
+  <!-- Placeholder cards -->
+  <div class="bg-content">
+    <div class="bg-card">
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line short"></div>
+    </div>
+    <div class="bg-card">
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line medium"></div>
+    </div>
+    <div class="bg-card">
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line long"></div>
+    </div>
+    <div class="bg-card">
+      <div class="bg-card-line short"></div>
+      <div class="bg-card-line medium"></div>
+      <div class="bg-card-line long"></div>
+      <div class="bg-card-line short"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL OVERLAY ========== -->
+<div class="overlay">
+  <div class="modal">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-title">Medical Glossary</div>
+      <div class="modal-subtitle">Quick reference for clinical and ML terms used in this tool</div>
+      <div class="modal-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="modal-search">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" placeholder="Search terms...">
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <div class="glossary-grid">
+        <!-- 1 -->
+        <div class="glossary-card">
+          <div class="glossary-term">Ejection Fraction <span class="glossary-tag clinical">Clinical</span></div>
+          <div class="glossary-def">Percentage of blood pumped out of the heart with each beat. Normal: 55-70%.</div>
+        </div>
+        <!-- 2 -->
+        <div class="glossary-card">
+          <div class="glossary-term">Serum Creatinine <span class="glossary-tag clinical">Clinical</span></div>
+          <div class="glossary-def">Blood test measuring kidney function. High levels indicate kidney damage.</div>
+        </div>
+        <!-- 3 -->
+        <div class="glossary-card">
+          <div class="glossary-term">Sensitivity (Recall) <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">Proportion of actual positive cases correctly identified by the model.</div>
+        </div>
+        <!-- 4 -->
+        <div class="glossary-card">
+          <div class="glossary-term">Specificity <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">Proportion of actual negative cases correctly identified by the model.</div>
+        </div>
+        <!-- 5 -->
+        <div class="glossary-card">
+          <div class="glossary-term">SHAP Values <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">SHapley Additive exPlanations -- a method to explain individual model predictions.</div>
+        </div>
+        <!-- 6 -->
+        <div class="glossary-card">
+          <div class="glossary-term">SMOTE <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">Synthetic Minority Over-sampling Technique -- creates synthetic samples to balance classes.</div>
+        </div>
+        <!-- 7 -->
+        <div class="glossary-card">
+          <div class="glossary-term">AUC-ROC <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">Area Under the Receiver Operating Characteristic curve. Measures discrimination ability.</div>
+        </div>
+        <!-- 8 -->
+        <div class="glossary-card">
+          <div class="glossary-term">F1 Score <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">Harmonic mean of precision and recall. Balances both metrics.</div>
+        </div>
+        <!-- 9 -->
+        <div class="glossary-card">
+          <div class="glossary-term">Confusion Matrix <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">Table showing true/false positives and negatives of model predictions.</div>
+        </div>
+        <!-- 10 -->
+        <div class="glossary-card">
+          <div class="glossary-term">Overfitting <span class="glossary-tag ml">ML</span></div>
+          <div class="glossary-def">When a model memorizes training data and performs poorly on new data.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-count">Showing 10 of 45 terms</div>
+      <button class="btn btn-outline">Close</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>MedVix - Step 7: Ethics &amp; Bias Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #059669;
+    --primary-lt: #10B981;
+    --primary-bg: #ECFDF5;
+    --dark: #1E293B;
+    --text: #334155;
+    --muted: #64748B;
+    --surface: #FFFFFF;
+    --background: #F8FAFC;
+    --border: #E2E8F0;
+    --success: #16A34A;
+    --warning: #D97706;
+    --danger: #DC2626;
+    --info: #2563EB;
+    --radius-card: 12px;
+    --radius-btn: 8px;
+    --radius-pill: 999px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    width: 1440px;
+    min-height: 900px;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== NAVBAR ===== */
+  .navbar {
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #059669, #10B981);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+  .brand-text {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .brand-name {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+  }
+  .brand-tag {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .btn-help {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  /* ===== STEPPER ===== */
+  .stepper-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 16px 32px;
+  }
+  .stepper-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    position: relative;
+    text-align: center;
+  }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: calc(50% + 18px);
+    width: calc(100% - 36px);
+    height: 2px;
+    background: var(--border);
+  }
+  .step-item.done:not(:last-child)::after {
+    background: var(--primary);
+  }
+  .step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    position: relative;
+    z-index: 2;
+    background: #F1F5F9;
+    color: var(--muted);
+    border: 2px solid var(--border);
+  }
+  .step-item.done .step-circle {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+  .step-item.active .step-circle {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .step-item.future .step-circle {
+    background: #F1F5F9;
+    color: var(--muted);
+    border: 2px solid var(--border);
+  }
+  .step-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .step-item.done .step-label { color: var(--primary); }
+  .step-item.active .step-label { color: var(--primary); }
+  .step-item.future .step-label { color: var(--muted); }
+
+  /* ===== DOMAIN PILLS ===== */
+  .pills-wrapper {
+    padding: 12px 32px 0;
+  }
+  .pills-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .pill.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  /* ===== CONTENT ===== */
+  .content-area {
+    padding: 20px 32px;
+  }
+  .screen-header {
+    margin-bottom: 20px;
+  }
+  .step-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: var(--primary-bg);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    margin-bottom: 8px;
+  }
+  .screen-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+  .screen-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .card-header {
+    padding: 16px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-body {
+    padding: 16px 20px 20px;
+  }
+
+  /* ===== TABLE ===== */
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+  }
+  .data-table thead th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+    background: #FAFBFC;
+    white-space: nowrap;
+  }
+  .data-table thead th:first-child {
+    border-radius: 8px 0 0 0;
+  }
+  .data-table thead th:last-child {
+    border-radius: 0 8px 0 0;
+  }
+  .data-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .data-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .data-table .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-green { background: #ECFDF5; color: #059669; }
+  .badge-amber { background: #FFFBEB; color: #D97706; }
+  .badge-red { background: #FEF2F2; color: #DC2626; }
+  .badge-gray { background: #F1F5F9; color: #64748B; }
+
+  /* Warning banner */
+  .warning-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    margin-top: 16px;
+  }
+  .warning-banner svg { flex-shrink: 0; margin-top: 1px; }
+  .warning-banner p {
+    font-size: 13px;
+    color: #92400E;
+    line-height: 1.5;
+  }
+
+  /* ===== CHECKLIST ===== */
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: var(--background);
+    border: 1px solid var(--border);
+  }
+  .check-item.pass {
+    border-color: #A7F3D0;
+    background: #F0FDF9;
+  }
+  .check-item.fail {
+    border-color: #FECACA;
+    background: #FFF5F5;
+  }
+  .check-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .check-item.pass .check-icon {
+    background: #059669;
+    color: white;
+  }
+  .check-item.fail .check-icon {
+    background: #DC2626;
+    color: white;
+  }
+  .check-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .check-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+  .check-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .compliance-score {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 700;
+    color: #D97706;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .score-text {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ===== ACCORDION ===== */
+  .accordion-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--background);
+    cursor: pointer;
+  }
+  .accordion-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: #FEF2F2;
+    color: #DC2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .accordion-content {
+    flex: 1;
+  }
+  .accordion-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+  .accordion-preview {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .accordion-chevron {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  /* ===== SUMMARY CARD ===== */
+  .summary-card {
+    background: linear-gradient(135deg, #F0FDF9 0%, #ECFDF5 50%, #F0FDFA 100%);
+    border: 1px solid #A7F3D0;
+  }
+  .summary-card .card-body {
+    padding: 20px 24px;
+  }
+  .summary-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.3);
+  }
+  .download-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 12px;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer-nav {
+    padding: 0 32px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border-radius: var(--radius-btn);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 1px 2px rgba(5,150,105,0.3);
+  }
+  .footer-step-indicator {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .sections-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+</style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <div class="logo-mark">M</div>
+    <div class="brand-text">
+      <span class="brand-name">MedVix</span>
+      <span class="brand-tag">· ML for Healthcare</span>
+    </div>
+  </div>
+  <button class="btn-help">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Help
+  </button>
+</nav>
+
+<!-- ===== STEPPER ===== -->
+<div class="stepper-wrapper">
+  <div class="stepper-card">
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Clinical Context</span>
+    </div>
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Data Exploration</span>
+    </div>
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Data Preparation</span>
+    </div>
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Model &amp; Parameters</span>
+    </div>
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Results</span>
+    </div>
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Explainability</span>
+    </div>
+    <div class="step-item active">
+      <div class="step-circle">7</div>
+      <span class="step-label">Ethics &amp; Bias</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DOMAIN PILLS ===== -->
+<div class="pills-wrapper">
+  <div class="pills-row">
+    <span class="pill active">Cardiology</span>
+    <span class="pill">Radiology</span>
+    <span class="pill">Nephrology</span>
+    <span class="pill">Oncology-Breast</span>
+    <span class="pill">Neurology-Parkinson</span>
+    <span class="pill">Endocrinology-Diabetes</span>
+    <span class="pill">Hepatology-Liver</span>
+    <span class="pill">Cardiology-Stroke</span>
+    <span class="pill">Mental Health</span>
+    <span class="pill">Pulmonology-COPD</span>
+    <span class="pill">Haematology-Anaemia</span>
+    <span class="pill">Dermatology</span>
+    <span class="pill">Ophthalmology</span>
+    <span class="pill">Orthopaedics-Spine</span>
+    <span class="pill">ICU/Sepsis</span>
+    <span class="pill">Obstetrics-Fetal</span>
+    <span class="pill">Cardiology-Arrhythmia</span>
+    <span class="pill">Oncology-Cervical</span>
+    <span class="pill">Thyroid/Endocrine</span>
+    <span class="pill">Pharmacy-Readmission</span>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="content-area">
+  <div class="screen-header">
+    <div class="step-tag">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Step 7 of 7
+    </div>
+    <h1 class="screen-title">Ethics &amp; Bias Audit</h1>
+    <p class="screen-subtitle">Evaluate model fairness across patient subgroups and ensure compliance with ethical AI standards.</p>
+  </div>
+
+  <div class="sections-grid">
+
+    <!-- ===== SECTION 1: FAIRNESS TABLE ===== -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="icon-wrap" style="background:#EFF6FF; color:#2563EB;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          Fairness metrics by subgroup
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Subgroup</th>
+              <th>N</th>
+              <th>Accuracy</th>
+              <th>Sensitivity</th>
+              <th>Specificity</th>
+              <th>Disparity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600;color:var(--dark);">Male</td>
+              <td class="mono">194</td>
+              <td class="mono">88%</td>
+              <td class="mono">81%</td>
+              <td class="mono">92%</td>
+              <td><span class="badge badge-gray">Baseline</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--dark);">Female</td>
+              <td class="mono">105</td>
+              <td class="mono">84%</td>
+              <td class="mono">73%</td>
+              <td class="mono">89%</td>
+              <td><span class="badge badge-amber">-4%</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--dark);">Age &lt; 60</td>
+              <td class="mono">129</td>
+              <td class="mono">90%</td>
+              <td class="mono">84%</td>
+              <td class="mono">93%</td>
+              <td><span class="badge badge-green">+2%</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--dark);">Age &ge; 60</td>
+              <td class="mono">170</td>
+              <td class="mono">85%</td>
+              <td class="mono">76%</td>
+              <td class="mono">90%</td>
+              <td><span class="badge badge-amber">-3%</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--dark);">Anaemic</td>
+              <td class="mono">129</td>
+              <td class="mono">82%</td>
+              <td class="mono">70%</td>
+              <td class="mono">88%</td>
+              <td><span class="badge badge-red">-6%</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;color:var(--dark);">Non-Anaemic</td>
+              <td class="mono">170</td>
+              <td class="mono">90%</td>
+              <td class="mono">85%</td>
+              <td class="mono">93%</td>
+              <td><span class="badge badge-green">+2%</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="warning-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <p><strong>Sensitivity gap of 11% detected for anaemic patients.</strong> The model may underperform for this subgroup. Consider targeted data collection or model adjustments.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SECTION 2: EU AI ACT COMPLIANCE ===== -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="icon-wrap" style="background:#ECFDF5; color:#059669;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          EU AI Act compliance checklist
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="checklist-grid">
+          <!-- PASS items -->
+          <div class="check-item pass">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">1. Data quality documentation</div>
+              <div class="check-desc">Training data sources and preprocessing documented</div>
+            </div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">2. Transparency</div>
+              <div class="check-desc">Model decisions are explainable via SHAP</div>
+            </div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">3. Human oversight</div>
+              <div class="check-desc">System designed for clinician-in-the-loop use</div>
+            </div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">4. Accuracy reporting</div>
+              <div class="check-desc">Performance metrics reported per subgroup</div>
+            </div>
+          </div>
+          <!-- FAIL items -->
+          <div class="check-item fail">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">5. Bias mitigation</div>
+              <div class="check-desc">Significant bias detected in anaemic subgroup</div>
+            </div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">6. Technical documentation</div>
+              <div class="check-desc">Architecture and limitations documented</div>
+            </div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">7. Risk classification</div>
+              <div class="check-desc">Classified as high-risk medical AI system</div>
+            </div>
+          </div>
+          <div class="check-item fail">
+            <div class="check-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div class="check-content">
+              <div class="check-title">8. Post-market monitoring</div>
+              <div class="check-desc">Monitoring plan not yet established</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="compliance-score">
+          <div class="score-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            6 / 8
+          </div>
+          <span class="score-text">requirements met</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SECTION 3: AI FAILURE CASE STUDIES ===== -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="icon-wrap" style="background:#FEF2F2; color:#DC2626;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </span>
+          AI failure case studies
+        </div>
+      </div>
+      <div class="card-body" style="padding-top:12px;">
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <div class="accordion-num">1</div>
+            <div class="accordion-content">
+              <div class="accordion-title">IBM Watson for Oncology (2018)</div>
+              <div class="accordion-preview">Unsafe treatment recommendations due to limited training data</div>
+            </div>
+            <div class="accordion-chevron">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <div class="accordion-num">2</div>
+            <div class="accordion-content">
+              <div class="accordion-title">Epic Sepsis Model (2021)</div>
+              <div class="accordion-preview">Missed 67% of sepsis cases in real-world deployment</div>
+            </div>
+            <div class="accordion-chevron">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <div class="accordion-num">3</div>
+            <div class="accordion-content">
+              <div class="accordion-title">Optum Algorithm Bias (2019)</div>
+              <div class="accordion-preview">Racial bias in healthcare resource allocation algorithm</div>
+            </div>
+            <div class="accordion-chevron">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SECTION 4: SUMMARY & CERTIFICATE ===== -->
+    <div class="card summary-card">
+      <div class="card-header">
+        <div class="card-title">
+          <span class="icon-wrap" style="background:rgba(5,150,105,0.15); color:#059669;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </span>
+          Assessment summary
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="summary-text">
+          Model shows good overall performance (<strong>87% accuracy</strong>, <strong>0.89 AUC</strong>) but has identified fairness concerns for anaemic patients. <strong>6 of 8</strong> EU AI Act requirements are met. Two areas require attention before clinical deployment: bias mitigation for the anaemic subgroup and establishing a post-market monitoring plan.
+        </p>
+        <button class="btn-download">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Assessment Certificate (PDF)
+        </button>
+        <p class="download-note">This certificate summarises the model evaluation for documentation purposes.</p>
+      </div>
+    </div>
+
+  </div><!-- /sections-grid -->
+</div>
+
+<!-- ===== FOOTER NAV ===== -->
+<div class="footer-nav">
+  <button class="btn btn-outline">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Previous
+  </button>
+  <span class="footer-step-indicator">Step 7 of 7</span>
+  <button class="btn btn-primary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    Finish
+  </button>
+</div>
+
+</body>
+</html>

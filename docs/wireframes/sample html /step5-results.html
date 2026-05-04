@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>MedVix - Step 5: Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #F8FAFC;
+    color: #334155;
+    line-height: 1.5;
+    width: 1440px;
+    min-height: 900px;
+    overflow-x: hidden;
+  }
+
+  /* ── Navbar ── */
+  .navbar {
+    height: 56px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar-left { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #059669, #10B981);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 16px; letter-spacing: -0.5px;
+  }
+  .logo-text { font-weight: 700; font-size: 16px; color: #1E293B; }
+  .logo-sub { font-size: 13px; color: #64748B; margin-left: 2px; }
+  .btn-help {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: #64748B; background: transparent;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+    padding: 6px 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-help:hover { border-color: #CBD5E1; color: #334155; }
+
+  /* ── Stepper ── */
+  .stepper-wrapper {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-top: none;
+    padding: 16px 32px;
+  }
+  .stepper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    position: relative;
+    text-align: center;
+  }
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: calc(50% + 18px);
+    width: calc(100% - 36px);
+    height: 2px;
+    background: #E2E8F0;
+  }
+  .step-item.done:not(:last-child)::after { background: #059669; }
+  .step-circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; position: relative; z-index: 2;
+    background: #F1F5F9; color: #94A3B8; border: 2px solid #E2E8F0;
+  }
+  .step-item.done .step-circle {
+    background: #ECFDF5; color: #059669; border-color: #059669;
+  }
+  .step-item.active .step-circle {
+    background: #059669; color: #fff; border-color: #059669;
+  }
+  .step-label { font-size: 11.5px; font-weight: 600; color: #94A3B8; line-height: 1.3; }
+  .step-item.done .step-label { color: #059669; }
+  .step-item.active .step-label { color: #059669; }
+
+  /* ── Domain Pills ── */
+  .domain-bar {
+    padding: 12px 32px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    background: #F8FAFC;
+  }
+  .domain-bar::-webkit-scrollbar { display: none; }
+  .pill {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 500;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    color: #64748B;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .pill:hover { border-color: #CBD5E1; color: #334155; }
+  .pill.active {
+    background: #059669; color: #FFFFFF; border-color: #059669;
+  }
+
+  /* ── Main Content ── */
+  .main-content { padding: 24px 32px 20px; }
+  .screen-header { margin-bottom: 24px; }
+  .step-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    color: #059669; background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .screen-title { font-size: 22px; font-weight: 700; color: #1E293B; margin-bottom: 4px; }
+  .screen-subtitle { font-size: 14px; color: #64748B; max-width: 640px; }
+
+  /* ── KPI Grid ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .kpi-ring { flex-shrink: 0; position: relative; width: 68px; height: 68px; }
+  .kpi-ring-value {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px; font-weight: 700; color: #1E293B;
+  }
+  .kpi-info { flex: 1; }
+  .kpi-name { font-size: 13px; font-weight: 600; color: #1E293B; margin-bottom: 2px; }
+  .kpi-interpret { font-size: 12px; color: #64748B; line-height: 1.4; }
+
+  /* ── Two Column ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 16px; font-weight: 700; color: #1E293B;
+    margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title svg { color: #059669; }
+
+  /* ── Confusion Matrix ── */
+  .cm-wrapper {
+    margin-bottom: 16px;
+  }
+  .cm-header-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    gap: 0;
+    margin-bottom: 4px;
+  }
+  .cm-corner { }
+  .cm-col-header {
+    text-align: center;
+    font-size: 11px; font-weight: 600; color: #64748B;
+    padding: 6px 0;
+  }
+  .cm-pred-label {
+    text-align: center;
+    font-size: 10.5px; font-weight: 600; color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    grid-column: 2 / -1;
+  }
+  .cm-grid {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 4px;
+  }
+  .cm-row-header {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #64748B;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    padding: 8px 0;
+  }
+  .cm-actual-label {
+    font-size: 10.5px; font-weight: 600; color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex; align-items: center; justify-content: center;
+    grid-row: 1 / 3;
+  }
+  .cm-cell {
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .cm-cell-tp { background: #ECFDF5; border: 1px solid #A7F3D0; }
+  .cm-cell-fp { background: #FFFBEB; border: 1px solid #FDE68A; }
+  .cm-cell-fn { background: #FEF2F2; border: 1px solid #FECACA; }
+  .cm-cell-tn { background: #ECFDF5; border: 1px solid #A7F3D0; }
+  .cm-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px; font-weight: 700;
+  }
+  .cm-cell-tp .cm-value { color: #059669; }
+  .cm-cell-fp .cm-value { color: #D97706; }
+  .cm-cell-fn .cm-value { color: #DC2626; }
+  .cm-cell-tn .cm-value { color: #059669; }
+  .cm-label {
+    font-size: 10px; font-weight: 600; color: #64748B;
+    line-height: 1.3;
+  }
+
+  .cm-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 4px;
+  }
+  .cm-warning svg { flex-shrink: 0; color: #D97706; margin-top: 1px; }
+  .cm-warning-text { font-size: 12px; color: #92400E; line-height: 1.45; }
+
+  /* ── ROC Curve ── */
+  .roc-chart { width: 100%; }
+  .roc-legend {
+    display: flex; align-items: center; gap: 20px;
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid #F1F5F9;
+  }
+  .roc-legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #64748B;
+  }
+  .roc-legend-line {
+    width: 20px; height: 3px; border-radius: 2px;
+  }
+  .auc-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    color: #059669; background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    padding: 3px 10px; border-radius: 6px;
+    margin-left: auto;
+  }
+
+  /* ── Warning Banner ── */
+  .bottom-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .bottom-warning svg { flex-shrink: 0; color: #D97706; margin-top: 2px; }
+  .bottom-warning-content { flex: 1; }
+  .bottom-warning-title { font-size: 13.5px; font-weight: 700; color: #92400E; margin-bottom: 2px; }
+  .bottom-warning-text { font-size: 13px; color: #92400E; line-height: 1.45; }
+
+  /* ── Footer ── */
+  .footer {
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    bottom: 0;
+  }
+  .btn-outline {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px; font-weight: 600;
+    color: #334155; background: #FFFFFF;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+    padding: 9px 20px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-outline:hover { background: #F8FAFC; border-color: #CBD5E1; }
+  .footer-step { font-size: 13px; font-weight: 500; color: #64748B; }
+  .btn-primary {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px; font-weight: 600;
+    color: #FFFFFF; background: #059669;
+    border: none; border-radius: 8px;
+    padding: 9px 22px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #047857; }
+
+  /* Model badge */
+  .model-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600;
+    color: #059669; background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    padding: 4px 12px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+</style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- ════ NAVBAR ════ -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <div class="logo-mark">M</div>
+    <span class="logo-text">MedVix</span>
+    <span class="logo-sub">&middot; ML for Healthcare</span>
+  </div>
+  <button class="btn-help">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+    Help
+  </button>
+</nav>
+
+<!-- ════ STEPPER ════ -->
+<div class="stepper-wrapper">
+  <div class="stepper">
+    <!-- Step 1 - done -->
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Clinical Context</span>
+    </div>
+    <!-- Step 2 - done -->
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Data Exploration</span>
+    </div>
+    <!-- Step 3 - done -->
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Data Preparation</span>
+    </div>
+    <!-- Step 4 - done -->
+    <div class="step-item done">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Model &amp; Parameters</span>
+    </div>
+    <!-- Step 5 - active -->
+    <div class="step-item active">
+      <div class="step-circle">5</div>
+      <span class="step-label">Results</span>
+    </div>
+    <!-- Step 6 -->
+    <div class="step-item">
+      <div class="step-circle">6</div>
+      <span class="step-label">Explainability</span>
+    </div>
+    <!-- Step 7 -->
+    <div class="step-item">
+      <div class="step-circle">7</div>
+      <span class="step-label">Ethics &amp; Bias</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DOMAIN PILLS ════ -->
+<div class="domain-bar">
+  <span class="pill active">Cardiology</span>
+  <span class="pill">Radiology</span>
+  <span class="pill">Nephrology</span>
+  <span class="pill">Oncology-Breast</span>
+  <span class="pill">Neurology-Parkinson</span>
+  <span class="pill">Endocrinology-Diabetes</span>
+  <span class="pill">Hepatology-Liver</span>
+  <span class="pill">Cardiology-Stroke</span>
+  <span class="pill">Mental Health</span>
+  <span class="pill">Pulmonology-COPD</span>
+  <span class="pill">Haematology-Anaemia</span>
+  <span class="pill">Dermatology</span>
+  <span class="pill">Ophthalmology</span>
+  <span class="pill">Orthopaedics-Spine</span>
+  <span class="pill">ICU/Sepsis</span>
+  <span class="pill">Obstetrics-Fetal</span>
+  <span class="pill">Cardiology-Arrhythmia</span>
+  <span class="pill">Oncology-Cervical</span>
+  <span class="pill">Thyroid/Endocrine</span>
+  <span class="pill">Pharmacy-Readmission</span>
+</div>
+
+<!-- ════ MAIN CONTENT ════ -->
+<div class="main-content">
+
+  <!-- Screen Header -->
+  <div class="screen-header">
+    <div class="step-tag">Step 5 of 7</div>
+    <h1 class="screen-title">Results</h1>
+    <p class="screen-subtitle">Review your model's performance metrics and visualizations.</p>
+    <div class="model-badge" style="margin-top: 10px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      KNN (K=5, Euclidean)
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ── -->
+  <div class="kpi-grid">
+
+    <!-- Accuracy 87% -->
+    <div class="kpi-card">
+      <div class="kpi-ring">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#059669" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="22.87"
+            stroke-linecap="round" transform="rotate(-90 34 34)"/>
+        </svg>
+        <span class="kpi-ring-value">87%</span>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-name">Accuracy</div>
+        <div class="kpi-interpret">Correct predictions overall</div>
+      </div>
+    </div>
+
+    <!-- Sensitivity 79% (amber) -->
+    <div class="kpi-card">
+      <div class="kpi-ring">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#D97706" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="36.94"
+            stroke-linecap="round" transform="rotate(-90 34 34)"/>
+        </svg>
+        <span class="kpi-ring-value">79%</span>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-name">Sensitivity</div>
+        <div class="kpi-interpret">Catches 79% of actual deaths</div>
+      </div>
+    </div>
+
+    <!-- Specificity 91% -->
+    <div class="kpi-card">
+      <div class="kpi-ring">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#059669" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="15.83"
+            stroke-linecap="round" transform="rotate(-90 34 34)"/>
+        </svg>
+        <span class="kpi-ring-value">91%</span>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-name">Specificity</div>
+        <div class="kpi-interpret">Correctly identifies survivors</div>
+      </div>
+    </div>
+
+    <!-- Precision 82% -->
+    <div class="kpi-card">
+      <div class="kpi-ring">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#059669" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="31.67"
+            stroke-linecap="round" transform="rotate(-90 34 34)"/>
+        </svg>
+        <span class="kpi-ring-value">82%</span>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-name">Precision</div>
+        <div class="kpi-interpret">82% of death predictions are correct</div>
+      </div>
+    </div>
+
+    <!-- F1 Score 0.80 -->
+    <div class="kpi-card">
+      <div class="kpi-ring">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#059669" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="35.19"
+            stroke-linecap="round" transform="rotate(-90 34 34)"/>
+        </svg>
+        <span class="kpi-ring-value">0.80</span>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-name">F1 Score</div>
+        <div class="kpi-interpret">Balance of precision &amp; sensitivity</div>
+      </div>
+    </div>
+
+    <!-- AUC-ROC 0.89 -->
+    <div class="kpi-card">
+      <div class="kpi-ring">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#E2E8F0" stroke-width="6"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="#059669" stroke-width="6"
+            stroke-dasharray="175.93" stroke-dashoffset="19.35"
+            stroke-linecap="round" transform="rotate(-90 34 34)"/>
+        </svg>
+        <span class="kpi-ring-value">0.89</span>
+      </div>
+      <div class="kpi-info">
+        <div class="kpi-name">AUC-ROC</div>
+        <div class="kpi-interpret">Excellent discrimination ability</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Two Column: Confusion Matrix + ROC ── -->
+  <div class="two-col">
+
+    <!-- Confusion Matrix -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+        Confusion matrix
+      </div>
+      <div class="cm-wrapper">
+        <div class="cm-pred-label" style="text-align: center; margin-bottom: 6px; margin-left: 100px;">
+          Predicted &rarr;
+        </div>
+        <div style="display: grid; grid-template-columns: 28px auto; gap: 4px;">
+          <!-- Actual label (rotated) -->
+          <div style="display: flex; align-items: center; justify-content: center; grid-row: 1 / 2;">
+            <span style="writing-mode: vertical-lr; transform: rotate(180deg); font-size: 10.5px; font-weight: 600; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase;">Actual &darr;</span>
+          </div>
+          <!-- Matrix body -->
+          <div>
+            <!-- Column headers -->
+            <div style="display: grid; grid-template-columns: 72px 1fr 1fr; gap: 4px; margin-bottom: 4px;">
+              <div></div>
+              <div style="text-align: center; font-size: 11px; font-weight: 600; color: #64748B;">Death</div>
+              <div style="text-align: center; font-size: 11px; font-weight: 600; color: #64748B;">Survival</div>
+            </div>
+            <!-- Row: Actual Death -->
+            <div style="display: grid; grid-template-columns: 72px 1fr 1fr; gap: 4px; margin-bottom: 4px;">
+              <div style="display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #64748B;">Death</div>
+              <div class="cm-cell cm-cell-tp">
+                <span class="cm-value">76</span>
+                <span class="cm-label">True Positive</span>
+              </div>
+              <div class="cm-cell cm-cell-fn">
+                <span class="cm-value">20</span>
+                <span class="cm-label">False Negative</span>
+              </div>
+            </div>
+            <!-- Row: Actual Survival -->
+            <div style="display: grid; grid-template-columns: 72px 1fr 1fr; gap: 4px;">
+              <div style="display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #64748B;">Survival</div>
+              <div class="cm-cell cm-cell-fp">
+                <span class="cm-value">17</span>
+                <span class="cm-label">False Positive</span>
+              </div>
+              <div class="cm-cell cm-cell-tn">
+                <span class="cm-value">186</span>
+                <span class="cm-label">True Negative</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Warning -->
+      <div class="cm-warning">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+        <span class="cm-warning-text">20 patients with actual mortality were missed (False Negatives). In clinical settings, minimizing FN is critical.</span>
+      </div>
+    </div>
+
+    <!-- ROC Curve -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        ROC curve
+      </div>
+      <div class="roc-chart">
+        <svg viewBox="0 0 400 300" width="100%" style="display: block;">
+          <!-- Background grid -->
+          <defs>
+            <linearGradient id="auc-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#059669" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#059669" stop-opacity="0.03"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Chart area -->
+          <g transform="translate(50, 15)">
+            <!-- Grid lines -->
+            <line x1="0" y1="0" x2="0" y2="250" stroke="#E2E8F0" stroke-width="1"/>
+            <line x1="0" y1="250" x2="320" y2="250" stroke="#E2E8F0" stroke-width="1"/>
+            <line x1="0" y1="187.5" x2="320" y2="187.5" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="0" y1="125" x2="320" y2="125" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="0" y1="62.5" x2="320" y2="62.5" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="80" y1="0" x2="80" y2="250" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="160" y1="0" x2="160" y2="250" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="240" y1="0" x2="240" y2="250" stroke="#F1F5F9" stroke-width="1"/>
+            <line x1="320" y1="0" x2="320" y2="250" stroke="#F1F5F9" stroke-width="1"/>
+
+            <!-- Y-axis labels -->
+            <text x="-8" y="254" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.0</text>
+            <text x="-8" y="191" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.25</text>
+            <text x="-8" y="129" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.50</text>
+            <text x="-8" y="66" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.75</text>
+            <text x="-8" y="8" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">1.0</text>
+
+            <!-- X-axis labels -->
+            <text x="0" y="270" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.0</text>
+            <text x="80" y="270" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.25</text>
+            <text x="160" y="270" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.50</text>
+            <text x="240" y="270" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">0.75</text>
+            <text x="320" y="270" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">1.0</text>
+
+            <!-- Axis titles -->
+            <text x="160" y="292" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="500" fill="#64748B">False Positive Rate</text>
+            <text transform="rotate(-90)" x="-125" y="-35" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="500" fill="#64748B">True Positive Rate</text>
+
+            <!-- Diagonal dashed line (random baseline) -->
+            <line x1="0" y1="250" x2="320" y2="0" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6 4"/>
+
+            <!-- AUC fill area -->
+            <path d="M0,250 Q16,195 32,155 Q64,80 96,52 Q144,22 192,12 Q240,5 288,2 L320,0 L320,250 Z"
+              fill="url(#auc-fill)"/>
+
+            <!-- ROC Curve -->
+            <path d="M0,250 Q16,195 32,155 Q64,80 96,52 Q144,22 192,12 Q240,5 288,2 L320,0"
+              fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
+
+            <!-- Highlight point -->
+            <circle cx="96" cy="52" r="4" fill="#FFFFFF" stroke="#059669" stroke-width="2"/>
+
+          </g>
+        </svg>
+      </div>
+      <div class="roc-legend">
+        <div class="roc-legend-item">
+          <div class="roc-legend-line" style="background: #059669;"></div>
+          KNN model
+        </div>
+        <div class="roc-legend-item">
+          <div class="roc-legend-line" style="background: #CBD5E1; border-top: 1.5px dashed #94A3B8; height: 0;"></div>
+          <svg width="20" height="3" viewBox="0 0 20 3"><line x1="0" y1="1.5" x2="20" y2="1.5" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+          Random classifier
+        </div>
+        <span class="auc-badge">AUC = 0.89</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Warning Banner ── -->
+  <div class="bottom-warning">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    <div class="bottom-warning-content">
+      <div class="bottom-warning-title">Sensitivity below 80%</div>
+      <div class="bottom-warning-text">Consider adjusting the decision threshold or trying a different model for critical clinical applications.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════ FOOTER ════ -->
+<div class="footer">
+  <button class="btn-outline">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    Previous
+  </button>
+  <span class="footer-step">Step 5 of 7</span>
+  <button class="btn-primary">
+    Continue
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+</div>
+
+</body>
+</html>
