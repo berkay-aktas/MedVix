@@ -2,7 +2,8 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: '/api',
-  timeout: 30000,
+  // SHAP KernelExplainer (SVM/KNN/Naive Bayes) can take 30-60s on training-set background.
+  timeout: 180000,
   headers: {
     'Content-Type': 'application/json',
   },
