@@ -8,8 +8,11 @@ import shap
 from sklearn.decomposition import PCA
 
 from app.models.explainability import (
+    AutoFindResponse,
+    CounterfactualResponse,
     ExplainabilityResponse,
     FeatureImportanceItem,
+    FeatureRange,
     PatientMapPoint,
     PatientMapResponse,
     PatientOption,
@@ -557,4 +560,271 @@ def compute_patient_map(session: SessionState, model_id: str) -> PatientMapRespo
         has_age_subgroup=has_age_subgroup,
         domain_id=session.domain_id,
         is_multiclass=is_multiclass,
+    )
+
+
+# --- Counterfactual Explorer (Step 6 drill-down) ---------------------------
+
+
+def _resolve_model_and_data(session: SessionState, model_id: str):
+    """Common setup: validate model, get/rebuild model object, return (model, model_type, domain, feature_cols, has_scaler)."""
+    if model_id not in session.trained_models:
+        raise ValueError(f"Model '{model_id}' not found in session.")
+
+    model_data = session.trained_models[model_id]
+    model_type = model_data["model_type"]
+
+    model = None
+    if session.model_objects:
+        model = session.model_objects.get(model_id)
+    if model is None:
+        model = _rebuild_model(session, model_id, model_data)
+
+    domain = get_domain_detail(session.domain_id)
+    feature_cols = session.feature_columns or []
+    has_scaler = hasattr(session, "scaler") and session.scaler is not None
+    return model, model_type, domain, feature_cols, has_scaler
+
+
+def _predict_class_proba(model: Any, X_row: np.ndarray) -> Tuple[float, str, bool]:
+    """Run predict_proba on a single-row matrix; return (probability, class_label, is_multiclass)."""
+    if not hasattr(model, "predict_proba"):
+        pred = model.predict(X_row)[0]
+        return 0.5, ("positive" if int(pred) == 1 else "negative"), False
+
+    proba = model.predict_proba(X_row)[0]
+    is_multi = len(proba) > 2
+    if is_multi:
+        return float(np.max(proba)), str(int(np.argmax(proba))), True
+    return float(proba[1]), ("positive" if proba[1] >= 0.5 else "negative"), False
+
+
+def _build_feature_ranges(
+    feature_cols: List[str],
+    X_train_raw: np.ndarray,
+    patient_raw: np.ndarray,
+    domain,
+    column_mapping,
+) -> List[FeatureRange]:
+    """Compute per-feature slider/toggle metadata from training-data percentiles."""
+    ranges: List[FeatureRange] = []
+    for i, col in enumerate(feature_cols):
+        if i >= X_train_raw.shape[1]:
+            continue
+        col_values = X_train_raw[:, i]
+        unique_vals = np.unique(col_values)
+        is_binary = len(unique_vals) == 2
+        display = _get_short_name(col, domain.feature_descriptions, column_mapping)
+
+        if is_binary:
+            min_v = float(np.min(unique_vals))
+            max_v = float(np.max(unique_vals))
+            feat_type = "binary"
+        else:
+            min_v = float(np.percentile(col_values, 1))
+            max_v = float(np.percentile(col_values, 99))
+            feat_type = "continuous"
+            if max_v - min_v < 1e-6:
+                min_v = float(np.min(col_values))
+                max_v = float(np.max(col_values))
+                if max_v - min_v < 1e-6:
+                    max_v = min_v + 1.0
+
+        current_value = float(patient_raw[0][i])
+        # Clamp current value into [min_v, max_v] so sliders don't render with thumb out of bounds
+        if not is_binary:
+            current_value = max(min_v, min(max_v, current_value))
+
+        ranges.append(FeatureRange(
+            feature_name=col,
+            display_name=display,
+            feature_type=feat_type,
+            min_value=round(min_v, 4),
+            max_value=round(max_v, 4),
+            current_value=round(current_value, 4),
+        ))
+    return ranges
+
+
+def compute_counterfactual(
+    session: SessionState,
+    model_id: str,
+    patient_index: int,
+    feature_overrides: Optional[Dict[str, float]] = None,
+) -> CounterfactualResponse:
+    """Predict on a patient with optional feature overrides; always returns feature_ranges."""
+    model, _, domain, feature_cols, has_scaler = _resolve_model_and_data(session, model_id)
+
+    X_test = session.X_test
+    if patient_index < 0 or patient_index >= len(X_test):
+        raise ValueError(f"Patient index {patient_index} out of range (0-{len(X_test)-1}).")
+
+    patient_scaled = X_test[patient_index:patient_index + 1]
+    if has_scaler:
+        patient_raw = session.scaler.inverse_transform(patient_scaled)
+        X_train_raw = session.scaler.inverse_transform(session.X_train)
+    else:
+        patient_raw = patient_scaled.copy()
+        X_train_raw = session.X_train
+
+    feature_ranges = _build_feature_ranges(feature_cols, X_train_raw, patient_raw, domain, session.column_mapping)
+
+    # Baseline (no overrides)
+    baseline_prob, baseline_class, is_multiclass = _predict_class_proba(model, patient_scaled)
+
+    # Apply overrides on a fresh copy of the original-scale row
+    modified_raw = patient_raw.copy()
+    if feature_overrides:
+        for fname, new_val in feature_overrides.items():
+            if fname in feature_cols:
+                idx = feature_cols.index(fname)
+                if idx < modified_raw.shape[1]:
+                    try:
+                        modified_raw[0][idx] = float(new_val)
+                    except (TypeError, ValueError):
+                        continue
+
+    if has_scaler:
+        modified_scaled = session.scaler.transform(modified_raw)
+    else:
+        modified_scaled = modified_raw
+
+    new_prob, new_class, _ = _predict_class_proba(model, modified_scaled)
+
+    if is_multiclass:
+        pred_label = f"Class {new_class}"
+    else:
+        pred_label = "High risk" if new_class == "positive" else "Low risk"
+
+    return CounterfactualResponse(
+        probability=round(new_prob, 4),
+        predicted_class=new_class,
+        predicted_label=pred_label,
+        baseline_probability=round(baseline_prob, 4),
+        baseline_class=baseline_class,
+        prediction_changed=(new_class != baseline_class),
+        is_multiclass=is_multiclass,
+        feature_ranges=feature_ranges,
+    )
+
+
+def _format_value(v: float) -> str:
+    """Format a numeric feature value for human-readable explanation."""
+    if abs(v) >= 100:
+        return str(int(round(v)))
+    if abs(v - round(v)) < 1e-6:
+        return str(int(round(v)))
+    return f"{v:.1f}"
+
+
+def auto_find_counterfactual(
+    session: SessionState,
+    model_id: str,
+    patient_index: int,
+) -> AutoFindResponse:
+    """Grid-search single-feature changes to find the smallest delta that flips the prediction class."""
+    model, _, domain, feature_cols, has_scaler = _resolve_model_and_data(session, model_id)
+
+    X_test = session.X_test
+    if patient_index < 0 or patient_index >= len(X_test):
+        raise ValueError(f"Patient index {patient_index} out of range (0-{len(X_test)-1}).")
+
+    if not hasattr(model, "predict_proba"):
+        return AutoFindResponse(
+            success=False,
+            baseline_probability=0.5,
+            baseline_class="unknown",
+            explanation="This model does not provide probability outputs; counterfactual auto-find is unavailable.",
+        )
+
+    patient_scaled = X_test[patient_index:patient_index + 1]
+    if has_scaler:
+        patient_raw = session.scaler.inverse_transform(patient_scaled)
+        X_train_raw = session.scaler.inverse_transform(session.X_train)
+    else:
+        patient_raw = patient_scaled.copy()
+        X_train_raw = session.X_train
+
+    baseline_prob, baseline_class, is_multiclass = _predict_class_proba(model, patient_scaled)
+
+    best: Optional[Dict[str, Any]] = None
+
+    for i, col in enumerate(feature_cols):
+        if i >= X_train_raw.shape[1]:
+            continue
+        col_values = X_train_raw[:, i]
+        unique_vals = np.unique(col_values)
+        is_binary = len(unique_vals) == 2
+        original_val = float(patient_raw[0][i])
+
+        if is_binary:
+            other_val = float(unique_vals[0]) if abs(original_val - unique_vals[1]) < abs(original_val - unique_vals[0]) else float(unique_vals[1])
+            candidates = [other_val]
+        else:
+            p1 = float(np.percentile(col_values, 1))
+            p99 = float(np.percentile(col_values, 99))
+            if p99 - p1 < 1e-6:
+                continue
+            candidates = list(np.linspace(p1, p99, 21))
+
+        col_range = float(col_values.max() - col_values.min()) or 1.0
+
+        for cand in candidates:
+            if abs(cand - original_val) < 1e-9:
+                continue
+            modified = patient_raw.copy()
+            modified[0][i] = float(cand)
+            if has_scaler:
+                modified_scaled = session.scaler.transform(modified)
+            else:
+                modified_scaled = modified
+            new_prob, new_class, _ = _predict_class_proba(model, modified_scaled)
+
+            if new_class != baseline_class:
+                delta_abs = abs(cand - original_val)
+                normalized_delta = delta_abs / col_range
+                if best is None or normalized_delta < best["normalized_delta"]:
+                    best = {
+                        "feature_name": col,
+                        "original_value": original_val,
+                        "suggested_value": float(cand),
+                        "delta": float(cand) - original_val,
+                        "normalized_delta": normalized_delta,
+                        "new_prob": new_prob,
+                        "new_class": new_class,
+                    }
+
+    if best is None:
+        return AutoFindResponse(
+            success=False,
+            baseline_probability=round(baseline_prob, 4),
+            baseline_class=baseline_class,
+            explanation="No single-feature change within the typical training range (1st–99th percentile) flips this prediction. The model is confident; try editing multiple features manually.",
+        )
+
+    display = _get_short_name(best["feature_name"], domain.feature_descriptions, session.column_mapping)
+    direction = "raise" if best["delta"] > 0 else "lower"
+    if is_multiclass:
+        outcome = f"class {best['new_class']}"
+    else:
+        outcome = "high risk" if best["new_class"] == "positive" else "low risk"
+
+    explanation = (
+        f"{direction.capitalize()} {display} from {_format_value(best['original_value'])} "
+        f"to {_format_value(best['suggested_value'])} "
+        f"(change of {_format_value(abs(best['delta']))}) — prediction flips to {outcome}."
+    )
+
+    return AutoFindResponse(
+        success=True,
+        feature_name=best["feature_name"],
+        display_name=display,
+        original_value=round(best["original_value"], 4),
+        suggested_value=round(best["suggested_value"], 4),
+        delta=round(best["delta"], 4),
+        baseline_probability=round(baseline_prob, 4),
+        new_probability=round(best["new_prob"], 4),
+        baseline_class=baseline_class,
+        new_class=best["new_class"],
+        explanation=explanation,
     )

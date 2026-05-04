@@ -5,6 +5,9 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from app.models.explainability import (
+    AutoFindResponse,
+    CounterfactualRequest,
+    CounterfactualResponse,
     ExplainabilityRequest,
     ExplainabilityResponse,
     PatientMapResponse,
@@ -14,6 +17,8 @@ from app.models.explainability import (
 from app.services import session_service
 from app.services.domain_service import get_domain_detail
 from app.services.explainability_service import (
+    auto_find_counterfactual,
+    compute_counterfactual,
     compute_feature_importance,
     compute_patient_map,
     compute_waterfall,
@@ -110,3 +115,67 @@ async def patient_map(request: ExplainabilityRequest) -> PatientMapResponse:
     except Exception as exc:
         logger.exception("Patient map computation failed")
         raise HTTPException(status_code=500, detail=f"Patient map computation error: {str(exc)}")
+
+
+@router.post(
+    "/counterfactual",
+    response_model=CounterfactualResponse,
+    summary="Predict on a patient with optional feature overrides",
+    description=(
+        "Returns the model's predicted probability and class for the patient with "
+        "any feature_overrides applied (in original/un-scaled units). Always returns "
+        "feature_ranges so the frontend can render sliders and toggles. Pass an empty "
+        "feature_overrides dict (or None) to get the baseline prediction."
+    ),
+    responses={
+        400: {"description": "Invalid patient index, model not trained, or override application failed"},
+        404: {"description": "Session not found"},
+    },
+)
+async def counterfactual(request: CounterfactualRequest) -> CounterfactualResponse:
+    """Compute counterfactual prediction for a patient."""
+    session = session_service.get_session(request.session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found.")
+
+    try:
+        return compute_counterfactual(
+            session,
+            request.model_id,
+            request.patient_index,
+            request.feature_overrides,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.exception("Counterfactual computation failed")
+        raise HTTPException(status_code=500, detail=f"Counterfactual error: {str(exc)}")
+
+
+@router.post(
+    "/counterfactual/auto-find",
+    response_model=AutoFindResponse,
+    summary="Find smallest single-feature change that flips the prediction",
+    description=(
+        "Runs a per-feature grid search (1st–99th percentile of training data) and returns "
+        "the smallest delta that flips the predicted class. If no single-feature change "
+        "within the typical range can flip the prediction, returns success=false with an explanation."
+    ),
+    responses={
+        400: {"description": "Invalid patient index or model not trained"},
+        404: {"description": "Session not found"},
+    },
+)
+async def counterfactual_auto_find(request: WaterfallRequest) -> AutoFindResponse:
+    """Auto-find a counterfactual flip via grid search."""
+    session = session_service.get_session(request.session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found.")
+
+    try:
+        return auto_find_counterfactual(session, request.model_id, request.patient_index)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.exception("Counterfactual auto-find failed")
+        raise HTTPException(status_code=500, detail=f"Auto-find error: {str(exc)}")
