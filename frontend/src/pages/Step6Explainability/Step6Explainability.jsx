@@ -11,6 +11,7 @@ import PatientSelector from './PatientSelector';
 import WaterfallChart from './WaterfallChart';
 import ClinicalSenseCheck from './ClinicalSenseCheck';
 import PatientRiskMap from './PatientRiskMap';
+import CounterfactualPanel from './CounterfactualPanel';
 
 /**
  * Step6 Explainability component for Step 6 (Explainability) of the MedVix pipeline.
@@ -184,6 +185,9 @@ export default function Step6Explainability() {
           </div>
         </div>
       </div>
+
+      {/* Counterfactual Explorer — interactive what-if (only when patient selected) */}
+      <CounterfactualPanel />
 
       {/* What-if Info Banner */}
       {waterfallData && waterfallData.bars.length > 0 && (
