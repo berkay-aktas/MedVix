@@ -82,6 +82,8 @@ class FeatureRange(BaseModel):
     min_value: float = Field(..., description="Lower bound: p1 of training data for continuous, lower binary value")
     max_value: float = Field(..., description="Upper bound: p99 of training data for continuous, upper binary value")
     current_value: float = Field(..., description="Patient's current original-scale value")
+    min_label: Optional[str] = Field(None, description="Human-readable label for min_value on binary features (e.g., 'Female', 'No')")
+    max_label: Optional[str] = Field(None, description="Human-readable label for max_value on binary features (e.g., 'Male', 'Yes')")
 
 
 class CounterfactualRequest(BaseModel):

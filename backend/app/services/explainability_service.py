@@ -607,6 +607,12 @@ def _build_feature_ranges(
     column_mapping,
 ) -> List[FeatureRange]:
     """Compute per-feature slider/toggle metadata from training-data percentiles."""
+    sex_col = None
+    sex_male_value = None
+    if getattr(domain, "subgroup_columns", None):
+        sex_col = domain.subgroup_columns.get("sex_column")
+        sex_male_value = domain.subgroup_columns.get("sex_male_value")
+
     ranges: List[FeatureRange] = []
     for i, col in enumerate(feature_cols):
         if i >= X_train_raw.shape[1]:
@@ -631,9 +637,19 @@ def _build_feature_ranges(
                     max_v = min_v + 1.0
 
         current_value = float(patient_raw[0][i])
-        # Clamp current value into [min_v, max_v] so sliders don't render with thumb out of bounds
         if not is_binary:
             current_value = max(min_v, min(max_v, current_value))
+
+        min_label = None
+        max_label = None
+        if is_binary:
+            if col == sex_col and sex_male_value is not None:
+                if abs(max_v - float(sex_male_value)) < abs(min_v - float(sex_male_value)):
+                    min_label, max_label = "Female", "Male"
+                else:
+                    min_label, max_label = "Male", "Female"
+            elif abs(min_v) < 1e-6 and abs(max_v - 1.0) < 1e-6:
+                min_label, max_label = "No", "Yes"
 
         ranges.append(FeatureRange(
             feature_name=col,
@@ -642,6 +658,8 @@ def _build_feature_ranges(
             min_value=round(min_v, 4),
             max_value=round(max_v, 4),
             current_value=round(current_value, 4),
+            min_label=min_label,
+            max_label=max_label,
         ))
     return ranges
 
