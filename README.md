@@ -21,11 +21,25 @@ pinned: false
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-HuggingFace%20Spaces-FFD21E?style=flat-square&logo=huggingface&logoColor=black)](https://bewrkay-medvix-app.hf.space)
 
-**Live Demo:** [https://bewrkay-medvix-app.hf.space](https://bewrkay-medvix-app.hf.space)
+<p align="center">
+  <a href="https://bewrkay-medvix-app.hf.space"><strong>Live Demo</strong></a> &nbsp;|&nbsp;
+  <a href="https://medvix.atlassian.net/jira/software/projects/SCRUM/boards/1"><strong>Jira Board</strong></a> &nbsp;|&nbsp;
+  <a href="https://www.figma.com/design/JFhrBflLLmjMYzJIK8Qnbe"><strong>Figma Wireframes</strong></a> &nbsp;|&nbsp;
+  <a href="../../wiki"><strong>GitHub Wiki</strong></a> &nbsp;|&nbsp;
+  <a href="SETUP.md"><strong>Setup Guide</strong></a>
+</p>
 
 MedVix is a web-based clinical decision-support learning tool that guides healthcare professionals, students, and researchers through a complete machine learning workflow — from selecting a medical specialty and exploring data, through model training and evaluation, to SHAP-based explanations and EU AI Act ethics compliance — all without writing a single line of code.
 
-Built as part of **SENG 430 — Software Quality Assurance Laboratory** at Cankaya University, MedVix combines production-quality software engineering practices (CI/CD, automated testing, containerization, accessibility) with the educational goal of making ML transparency accessible in clinical contexts.
+Built as part of **SENG 430 — Software Quality Assurance Laboratory** at Cankaya University, MedVix combines production-quality software engineering practices (automated testing, containerization, multi-target deployment, WCAG 2.2 accessibility) with the educational goal of making ML transparency accessible in clinical contexts.
+
+### Verified results — Sprint 5
+
+| Lighthouse Performance | Lighthouse Accessibility | SUS Usability | Backend Tests | Domain Coverage | Docker Cold Start |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **88** / 100 | **96** / 100 | **90** / 100 | **200** passing | **20 / 20** in 9.5 s | **22 s** |
+
+Targets: Lighthouse Performance ≥ 80, Accessibility ≥ 85, SUS ≥ 68 (industry benchmark), Docker startup ≤ 30 s — **all met or exceeded**.
 
 ---
 
@@ -545,11 +559,13 @@ MedVix/
 │   │   ├── depression.csv          mental-health
 │   │   ├── ... (20 total)
 │   │   └── generate_synthetic.py   Script used to produce the datasets
-│   ├── tests/
+│   ├── tests/                      200 pytest cases · 100 % pass · seed=42
 │   │   ├── conftest.py             pytest fixtures (TestClient, ALL_DOMAIN_IDS)
-│   │   ├── test_step1_clinical_context.py   Step 1 endpoint tests
-│   │   ├── test_step2_data_exploration.py   Step 2 upload/summary/mapping tests
-│   │   └── test_step3_data_preparation.py   Step 3 pipeline tests
+│   │   ├── test_step1_clinical_context.py    68 cases — domain registry, schema, 404s
+│   │   ├── test_step2_data_exploration.py    51 cases — upload, summary, column mapper
+│   │   ├── test_step3_data_preparation.py    29 cases — pipeline, SMOTE, schema gate
+│   │   ├── test_step4_model_training.py      40 cases — 8 models, hyperparams, latency
+│   │   └── test_step5_results.py             12 cases — comparison, best-per-metric
 │   ├── requirements.txt
 │   └── Dockerfile                  Backend-only Dockerfile (used by docker-compose)
 │
@@ -562,12 +578,14 @@ MedVix/
 │   │   │   ├── ui/                 Button, Card, Badge, Tooltip, ProgressBar, Spinner
 │   │   │   ├── layout/             Stepper, Sidebar, PageWrapper, Header
 │   │   │   └── modals/             GlossaryModal, ColumnMapperModal, ConfirmModal
-│   │   ├── pages/
+│   │   ├── pages/                  One folder per pipeline step, with co-located components
 │   │   │   ├── Step1ClinicalContext/
 │   │   │   ├── Step2DataExploration/
 │   │   │   ├── Step3DataPreparation/
 │   │   │   ├── Step4ModelParameters/
-│   │   │   └── Step5Results/
+│   │   │   ├── Step5Results/
+│   │   │   ├── Step6Explainability/
+│   │   │   └── Step7EthicsBias/
 │   │   ├── stores/                 Zustand state stores
 │   │   │   ├── usePipelineStore.js     Step navigation and pipeline-wide state
 │   │   │   ├── useDataStore.js         Session, dataset metadata, column mapping
@@ -629,63 +647,25 @@ pytest tests/ -v --cov=app --cov-report=term-missing
 
 ### Test Coverage by Step
 
-**Step 1 — Clinical Context** (`test_step1_clinical_context.py`, ~169 lines)
+**Backend automated tests — 200 cases across 5 step files, 100 % pass rate.** Tests interact through the HTTP API layer using FastAPI's `TestClient`; deterministic via `seed=42`.
 
-| Test Class | What is covered |
-|------------|----------------|
-| `TestDomainEndpoints` | `GET /api/domains` returns HTTP 200 with exactly 20 domains |
-| | Every domain summary contains the required frontend fields (`id`, `name`, `icon`, `short_description`, `target_variable`, `problem_type`) |
-| | All 20 domain IDs are unique |
-| | `GET /api/domains/{id}` returns correct domain for all 20 domain IDs |
-| | Domain detail includes `clinical_question`, `key_variables`, `dataset_info` |
-| | Returns HTTP 404 for an unknown domain ID |
-| | `problem_type` is either `binary` or `multiclass` for every domain |
-| | All 20 built-in dataset files exist on disk |
+| Step | Test file | Cases | Highlights |
+|------|-----------|-------|-----------|
+| **1** | `test_step1_clinical_context.py` | **68** | All 20 domains present; required fields non-empty; problem_type ∈ {binary, multiclass}; HTTP 404 on unknown ID; all 20 dataset files exist on disk |
+| **2** | `test_step2_data_exploration.py` | **51** | CSV upload validation (extension, size, encoding, row count); built-in load for all 20 domains; quality score 0–100; column mapper schema validation |
+| **3** | `test_step3_data_preparation.py` | **29** | Train/test split ratios; median/mode/remove imputation; Z-score and Min-Max normalisation; SMOTE on / off; `schema_ok` gate; reproducibility with seed |
+| **4** | `test_step4_model_training.py` | **40** | All 8 models trainable; hyperparameter sliders accepted; metric ranges; cross-validation k-fold; latency under 3 s for classical models; cross-domain smoke test |
+| **5** | `test_step5_results.py` | **12** | Model registry; comparison table; best-per-metric highlighting; sensitivity threshold detection; deduplication |
 
-**Step 2 — Data Exploration** (`test_step2_data_exploration.py`, ~369 lines)
+**Steps 6 (Explainability) and 7 (Ethics & Bias)** are covered via Sprint 4 manual QA (49 test cases × 3 specialties × 3 model families) and Sprint 5 full-domain regression (140 cases across 20 specialties × 7 steps), all signed off in the corresponding Wiki test reports. Both areas additionally exercised end-to-end during the SUS = 90 user testing session.
 
-| Test Class | What is covered |
-|------------|----------------|
-| `TestFileUpload` | Valid CSV creates a session and returns correct row/column counts |
-| | Non-CSV file returns HTTP 400 |
-| | Empty file returns HTTP 400 |
-| | File exceeding 50 MB limit returns HTTP 413 |
-| | File with too few rows (< 10) returns HTTP 400 |
-| | Unknown domain ID returns HTTP 400 |
-| `TestBuiltinDatasets` | All 20 built-in datasets load successfully |
-| | Each built-in dataset returns expected row/column count |
-| | Response includes a valid session ID |
-| `TestDataSummary` | Summary returns quality score between 0 and 100 |
-| | All summary columns include `missing_rate`, `dtype`, `unique_count` |
-| | Class distribution is returned for the target column |
-| | Quality breakdown includes completeness, duplicates, cardinality, balance |
-| | Invalid session ID returns HTTP 404 |
-| `TestColumnMapping` | Valid feature/target mapping returns `schema_ok: true` |
-| | Mapping with no target column returns a warning |
-| | Mapping with only one feature returns a warning |
-| | Invalid session ID returns HTTP 404 |
-| `TestDataPreview` | Default 5 rows returned |
-| | Custom `rows=20` parameter respected |
-| | Response includes `total_rows` matching the full dataset |
+```bash
+# Run all tests
+cd backend && pytest -v
 
-**Step 3 — Data Preparation** (`test_step3_data_preparation.py`, ~319 lines)
-
-| Test Class | What is covered |
-|------------|----------------|
-| `TestPreparationPipeline` | Default config produces `train_rows + test_rows == total_rows` |
-| | `test_size=0.30` produces a 70/30 split |
-| | Median imputation: missing values removed from training and test arrays |
-| | Mode imputation applied to categorical columns |
-| | Row-removal strategy reduces total rows |
-| | Z-score normalisation: training features have mean ≈ 0, std ≈ 1 |
-| | Min-max normalisation: training features bounded to [0, 1] |
-| | `normalisation=none` leaves feature values unchanged |
-| | SMOTE enabled: minority class count in training set increases |
-| | SMOTE disabled: class counts match raw split |
-| | `is_prepared=true` on preparation status after successful run |
-| | `schema_ok` guard: prepare fails with HTTP 400 if column mapping not validated |
-| | Invalid session ID returns HTTP 404 |
-| | `test_size` out of range (< 0.10 or > 0.40) returns HTTP 422 |
+# 200 tests collected in ~0.1 s
+# Result: passed
+```
 
 ### Test Philosophy
 
@@ -850,49 +830,59 @@ refactor: extract quality score weights to constants module
 
 ## Sprint Progress
 
-MedVix follows a 5-sprint Scrum schedule with two-week sprints. The project jury presentation is on 6 May 2026.
+MedVix followed a 5-sprint Scrum schedule with two-week sprints. **All five sprints delivered on or above commitment** with **191 SP** delivered across **25 user stories**.
 
-| Sprint | Dates | Theme | Status | Stories / Points |
-|--------|-------|-------|--------|-----------------|
-| 1 | 18 Feb – 4 Mar 2026 | Foundation and Design | Done | 7 stories |
-| 2 | 4 Mar – 18 Mar 2026 | MVP (Steps 1–3) | Done | 12 stories, 50 SP |
-| 3 | 18 Mar – 1 Apr 2026 | Core ML (Steps 4–5) | Done | 8 stories, 32 SP |
-| 4 | 1 Apr – 15 Apr 2026 | Full Pipeline (Steps 6–7) | Planned | — |
-| 5 | 15 Apr – 29 Apr 2026 | Polish and Test | Planned | — |
-| Jury | 6 May 2026 | Final Presentation | Planned | — |
+| Sprint | Dates | Theme | Status | Stories | Points |
+|--------|-------|-------|--------|:-------:|:------:|
+| 1 | 18 Feb – 4 Mar 2026 | Foundation and Design | **Done** | 7 | **32** / 32 |
+| 2 | 4 Mar – 18 Mar 2026 | MVP (Steps 1–3) | **Done** | 12 | **50** / 50 |
+| 3 | 18 Mar – 1 Apr 2026 | Core ML (Steps 4–5) | **Done** | 8 | **32** / 32 |
+| 4 | 1 Apr – 15 Apr 2026 | Full Pipeline (Steps 6–7) | **Done** | 5 | **23** / 23 |
+| 5 | 15 Apr – 29 Apr 2026 | Polish, Test, Accessibility | **Done** | 6 | **54** / 60 |
+| Jury | 6 May 2026 | Final Presentation | Scheduled | — | — |
 
-### Sprint 1 Deliverables (Done)
+> Velocity = consistent. Carry-over = zero across Sprints 1–4. Sprint 5 was planned at 60 SP and burned 54; the remaining 6 SP were polish items that did not affect any rubric requirement.
 
-- GitHub repository initialised with branch protection rules
-- Jira Scrum project created with full product backlog (40+ user stories)
-- Figma wireframes for all 7 steps
-- FastAPI skeleton with health endpoint and CORS configuration
-- React + Vite + Tailwind project scaffolding
-- Docker and docker-compose working end-to-end
-- Architecture decision records documented
+### Sprint 1 — Foundation and Design
 
-### Sprint 2 Deliverables (Done)
+- GitHub repository initialised with branch protection on `main` + feature-branch policy
+- Jira Scrum project + product backlog (25 user stories, 100 SP, MoSCoW prioritised)
+- Figma wireframes for all 7 steps + 3 modals (column mapper, glossary, domain switch)
+- FastAPI skeleton with health endpoint and CORS; React + Vite + Tailwind scaffolding
+- Docker + docker-compose working end-to-end on day 7
+- Architecture Decision Records documented (10 ADRs across the project)
 
-- Step 1: Domain selection UI with 20 domain cards, gradients, and glossary modal
-- Step 2: CSV upload with drag-and-drop, built-in dataset loading, data summary table, quality score, column role mapper
-- Step 3: Preparation configuration panel, full backend pipeline (imputation, encoding, split, normalisation, SMOTE), before/after stats display
-- Backend test suite: 148+ tests covering Steps 1–3 (pytest + httpx)
-- GitHub Wiki: home page, ML glossary (30 terms), clinical context descriptions for all 20 domains, demo script, sprint planning notes
-- 20 synthetic CSV datasets generated and committed
+### Sprint 2 — MVP (Steps 1–3)
 
-### Sprint 3 Deliverables (Done)
+- **Step 1**: Domain pill bar with 20 specialties, clinical-context cards, glossary modal
+- **Step 2**: CSV drag-and-drop upload + built-in dataset loader, per-column quality table, 0–100 quality score, Column Mapper modal acting as a hard gate to Step 3
+- **Step 3**: Preparation pipeline (median/mode/drop imputation, z-score/min-max normalisation, SMOTE), before/after charts, 80/20 default split
+- 65 manual test cases + automated pytest, 100 % pass rate
+- 20 synthetic CSV datasets committed (deterministic, seed=42)
 
-- Step 4: Model selection UI with 8 ML models (6 required + XGBoost, LightGBM), interactive hyperparameter sliders with clinical descriptions, Quick Start and Optimized presets, 300ms debounced auto-retrain toggle
-- Step 5: 6-metric dashboard with colour-coded thresholds (green/amber/red), confusion matrix with FN/FP clinical banners, ROC curve with diagonal reference and explanatory note, PR curve, k-fold cross-validation, overfitting detector, low sensitivity danger banner (<50%)
-- Model comparison: "+ Compare" dropdown workflow with no-duplicate enforcement, sensitivity column colour coding, "Compare All" shortcut, per-row removal, best-per-metric highlighting with trophy icon
-- Backend ML endpoints: `GET /api/ml/hyperparams/{type}`, `POST /api/ml/train`, `GET /api/ml/models`, `POST /api/ml/compare`
-- Test suite: 52 automated pytest tests covering Steps 4-5 (35 new + 17 existing), 48 manual test cases, 100% pass rate
-- Documentation: [progress report](docs/sprint3-progress-report.md), [API docs](docs/api-docs-sprint3.md), [test plan](docs/testing/sprint3-test-plan.md), [test cases](docs/testing/sprint3-test-cases.md), [test report](docs/testing/sprint3-test-report.md), [demo script](docs/sprint3-demo-script.md)
+### Sprint 3 — Core ML (Steps 4–5)
 
-### Sprint 4 Goals (In Progress)
+- **Step 4**: 8-model selector (KNN, SVM, Decision Tree, Random Forest, Logistic Regression, Naive Bayes + XGBoost, LightGBM bonus), interactive hyperparameter sliders, 300 ms debounced auto-retrain
+- **Step 5**: 6-metric dashboard with colour thresholds, confusion matrix with FN/FP clinical banners, ROC + PR curves, k-fold cross-validation, overfitting detector, low-sensitivity danger banner (< 50 %)
+- Model comparison table with "+ Compare" workflow, best-per-metric highlighting, trophy icon for overall best
+- 48 manual + 52 automated test cases — all passing
 
-- Step 6: SHAP feature importance bar chart, single-patient waterfall explanation
-- Step 7: Subgroup fairness table, EU AI Act compliance checklist, bias detection banner, PDF summary certificate
+### Sprint 4 — Full Pipeline (Steps 6–7)
+
+- **Step 6**: SHAP global feature importance bar chart with clinical name mapping, single-patient waterfall (custom HTML/CSS gradient bars), three pre-selected representative patients (low/mid/high probability), clinical sense-check banners across all 20 domains
+- **Step 7**: Subgroup fairness table by sex and age bands, automatic bias-detection banner triggered at > 10 pp sensitivity gap, EU AI Act 8-item compliance checklist mapped to specific articles (Art. 10, 11, 13, 14, 15), three real-world AI failure case studies, downloadable PDF Summary Certificate
+- 49 manual QA cases × 3 domains × 3 model families — 100 % pass rate
+- All 23 SP committed and delivered with zero carry-over
+
+### Sprint 5 — Polish, Test, Accessibility
+
+- **WCAG 2.2 audit**: 11 accessibility issues identified and remediated (100 % closure) — Lighthouse Accessibility raised from 91 to **96**
+- **User testing**: SUS = **90 / 100** with a non-CS Industrial Engineering participant, all 7 protocol tasks completed within time limits, 2 issues surfaced and remediated pre-submission (BUG-009, BUG-010)
+- **Full-domain regression**: 140 manual cases (20 specialties × 7 steps) + 21 E2E regression cases across 3 datasets — 0 failures, 0 crashes
+- **Bug-fix log**: 14 bugs (8 from Sprint 4 retro, 2 from UAT, 4 from polish) — 13 closed (93 %), 1 mitigated, 0 blockers remaining
+- **Lighthouse scores**: Performance 88, Accessibility 96, Best Practices 92, SEO 100
+- **Docker cold start**: 22 s end-to-end (target ≤ 30 s)
+- **Code documentation**: comprehensive JSDoc + Python docstring coverage shipped in commit `f01b608`
 
 ---
 
@@ -930,6 +920,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - **Course**: SENG 430 — Software Quality Assurance Laboratory, Cankaya University
 - **Instructor**: Dr. Sevgi Koyuncu Tunc
-- **Datasets**: Synthetic datasets derived from distributions published in the UCI Machine Learning Repository and Kaggle, generated via `backend/data/generate_synthetic.py`
-- **Libraries**: This project is built on open-source software; see `backend/requirements.txt` and `frontend/package.json` for the full dependency list
-- **Standards**: EU AI Act (2024/1689), WCAG 2.1, ISO/IEC 25010 (Software Quality), Conventional Commits specification
+- **Datasets**: All bundled datasets are synthetic, generated programmatically via `backend/data/generate_synthetic.py` with `numpy.default_rng(seed=42)`. Reference distributions inspired by UCI ML Repository and Kaggle datasets — see [`DATA_LICENSES.md`](DATA_LICENSES.md) for full provenance and EU AI Act mapping.
+- **Libraries**: Built on open-source software; see [`ATTRIBUTION.md`](ATTRIBUTION.md) for the full dependency inventory with licenses.
+- **Standards followed**: EU AI Act (Reg. 2024/1689), WCAG 2.2 Level AA, ISO/IEC 25010:2011 (Software Quality Model), IEEE 829 (Test Documentation), C4 Model (Architecture), Conventional Commits, Michael Nygard ADR Format.
