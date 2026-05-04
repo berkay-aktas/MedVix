@@ -46,3 +46,10 @@ class CertificateRequest(BaseModel):
     session_id: str
     model_id: str
     checklist_status: Dict[str, bool] = Field(..., description="8 checklist items with their toggle state")
+
+
+class ReceiptResponse(BaseModel):
+    receipt: str = Field(..., description="Plain-English narrative paragraph summarizing the session")
+    generated_at: str = Field(..., description="ISO 8601 timestamp of when the receipt was generated")
+    domain_id: str
+    model_id: str

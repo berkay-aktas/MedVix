@@ -11,6 +11,7 @@ from app.models.ethics import (
     BiasAnalysisResponse,
     ChecklistItemDef,
     CertificateRequest,
+    ReceiptResponse,
 )
 from app.services import session_service
 from app.services.ethics_service import (
@@ -18,6 +19,8 @@ from app.services.ethics_service import (
     generate_certificate_pdf,
     get_checklist_items,
 )
+from app.services.narration import narrate_session
+from datetime import datetime
 from typing import List
 
 logger = logging.getLogger("medvix.ethics")
@@ -92,6 +95,55 @@ async def generate_certificate(request: CertificateRequest):
     except Exception as exc:
         logger.exception("Certificate generation failed")
         raise HTTPException(status_code=500, detail=f"Certificate generation error: {str(exc)}")
+
+
+@router.post(
+    "/generate-receipt",
+    response_model=ReceiptResponse,
+    summary="Generate plain-English session receipt",
+    description=(
+        "Returns a deterministic prose paragraph (no LLM) summarising the entire session: "
+        "dataset, preparation, training, model performance, fairness analysis, and EU AI Act "
+        "checklist completion. Derived purely from session state."
+    ),
+    responses={
+        400: {"description": "Model not trained or session incomplete"},
+        404: {"description": "Session not found"},
+    },
+)
+async def generate_receipt(request: CertificateRequest) -> ReceiptResponse:
+    """Build a plain-English narrative receipt for the user's pipeline."""
+    session = session_service.get_session(request.session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found.")
+
+    if request.model_id not in (session.trained_models or {}):
+        raise HTTPException(status_code=400, detail=f"Model '{request.model_id}' not found in session.")
+
+    # Pull in bias analysis to enrich the fairness sentence (best-effort — skip on failure)
+    bias = None
+    try:
+        bias = compute_bias_analysis(session, request.model_id)
+    except Exception as exc:
+        logger.warning("Bias analysis failed during receipt generation; continuing without it: %s", exc)
+
+    try:
+        receipt_text = narrate_session(
+            session,
+            request.model_id,
+            bias=bias,
+            checklist_status=request.checklist_status,
+        )
+    except Exception as exc:
+        logger.exception("Narration failed")
+        raise HTTPException(status_code=500, detail=f"Receipt generation error: {str(exc)}")
+
+    return ReceiptResponse(
+        receipt=receipt_text,
+        generated_at=datetime.now().isoformat(timespec="seconds"),
+        domain_id=session.domain_id,
+        model_id=request.model_id,
+    )
 
 
 # Alias at /api/generate-certificate (matches submission spec)
