@@ -64,13 +64,17 @@ export default function CounterfactualPanel() {
     fetchPrediction({});
   }, [selectedPatientIndex, sessionId, activeModelResult?.model_id]);
 
-  // Scroll the panel into view once data lands after a patient selection.
+  // Scroll the panel into view only when the user is currently *above* it
+  // (e.g. clicked from the risk map). If they're already below the panel —
+  // for instance using the patient-selector dropdown — leave them put.
   useEffect(() => {
     if (counterfactualData && wantScrollRef.current && sectionRef.current) {
       wantScrollRef.current = false;
       const NAV_OFFSET = 72; // sticky navbar (h-14 = 56px) + breathing room
-      const top = sectionRef.current.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
-      window.scrollTo({ top, behavior: 'smooth' });
+      const rect = sectionRef.current.getBoundingClientRect();
+      if (rect.top > NAV_OFFSET) {
+        window.scrollTo({ top: rect.top + window.scrollY - NAV_OFFSET, behavior: 'smooth' });
+      }
     }
   }, [counterfactualData]);
 
