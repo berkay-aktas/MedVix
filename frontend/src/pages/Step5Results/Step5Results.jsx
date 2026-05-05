@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { BarChart3, ArrowLeft } from 'lucide-react';
 import clsx from 'clsx';
 import Banner from '../../components/ui/Banner';
 import Button from '../../components/ui/Button';
 import useMLStore from '../../stores/useMLStore';
 import usePipelineStore from '../../stores/usePipelineStore';
+import StickyModelBar from './StickyModelBar';
 import MetricsGrid from './MetricsGrid';
 import ConfusionMatrix from './ConfusionMatrix';
 import ROCCurve from './ROCCurve';
@@ -26,6 +27,7 @@ export default function Step5Results() {
   const setActiveModelResult = useMLStore((s) => s.setActiveModelResult);
   const setStep = usePipelineStore((s) => s.setStep);
   const completeStep = usePipelineStore((s) => s.completeStep);
+  const inlineSwitcherRef = useRef(null);
 
   // Mark step 5 complete when results are available
   useEffect(() => {
@@ -78,6 +80,14 @@ export default function Step5Results() {
 
   return (
     <div className="animate-fade-in">
+      {/* Sticky compact switcher — only fires when inline one scrolls out */}
+      <StickyModelBar
+        targetRef={inlineSwitcherRef}
+        trainedModels={trainedModels}
+        activeId={result.model_id}
+        onSelect={setActiveModelResult}
+      />
+
       {/* Page header */}
       <div className="mb-5">
         <div className="flex items-center gap-2 mb-1">
@@ -105,7 +115,7 @@ export default function Step5Results() {
 
       {/* Model switcher — visible whenever 2+ models have been trained */}
       {trainedModels.length > 1 && (
-        <div className="mb-5 flex items-center gap-2 flex-wrap">
+        <div ref={inlineSwitcherRef} className="mb-5 flex items-center gap-2 flex-wrap">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
             Showing:
           </span>
