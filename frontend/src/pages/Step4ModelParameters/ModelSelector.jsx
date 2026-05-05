@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import useMLStore from '../../stores/useMLStore';
 import useDataStore from '../../stores/useDataStore';
 import api from '../../utils/api';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { MODEL_EXPLANATIONS } from './modelExplanations';
 
 const MODELS = [
   {
@@ -144,12 +146,21 @@ export default function ModelSelector({ onParamsLoaded }) {
                 loadingModel && !isLoading && 'opacity-50 cursor-not-allowed'
               )}
             >
-              {/* Selected check */}
-              {isSelected && (
-                <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center">
-                  <Check className="w-3 h-3" />
-                </div>
-              )}
+              {/* Top-right: info popover (always present) + selected check */}
+              <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                {/* Wrap in span with stopPropagation so clicking (i) does not toggle the card */}
+                <span onClick={(e) => e.stopPropagation()}>
+                  <MetricInfoPopover
+                    explanation={MODEL_EXPLANATIONS[model.type]}
+                    align="right"
+                  />
+                </span>
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center">
+                    <Check className="w-3 h-3" />
+                  </div>
+                )}
+              </div>
 
               {/* Icon circle */}
               <div

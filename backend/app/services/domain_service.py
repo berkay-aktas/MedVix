@@ -90,6 +90,18 @@ _register(
             "age_under_threshold": 0.45,
             "age_over_threshold": 0.55,
         },
+        positive_label="Heart disease present",
+        negative_label="No heart disease",
+        positive_class_meaning=(
+            "The patient is likely to have significant coronary artery disease "
+            "(typically ≥ 50% narrowing in at least one major coronary artery). "
+            "This is the same condition that, when severe or untreated, can lead to a heart attack."
+        ),
+        negative_class_meaning=(
+            "No significant coronary artery disease was detected by the model based on "
+            "the patient's clinical and exercise-test results. Standard cardiac "
+            "follow-up is still recommended."
+        ),
     )
 )
 

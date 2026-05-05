@@ -1,4 +1,4 @@
-import { BookOpen } from 'lucide-react';
+import { BookOpen, HelpCircle } from 'lucide-react';
 import usePipelineStore from '../../stores/usePipelineStore';
 import useModalStore from '../../stores/useModalStore';
 import { getDomainById } from '../../utils/domains';
@@ -13,6 +13,7 @@ export default function Navbar() {
   const selectedDomain = usePipelineStore((s) => s.selectedDomain);
   const setStep = usePipelineStore((s) => s.setStep);
   const openGlossary = useModalStore((s) => s.openGlossary);
+  const openUserGuide = useModalStore((s) => s.openUserGuide);
 
   const domain = selectedDomain ? getDomainById(selectedDomain) : null;
 
@@ -60,15 +61,25 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Right: Glossary */}
-        <button
-          onClick={openGlossary}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-muted hover:text-primary hover:border-primary transition-colors"
-          aria-label="Open glossary of ML and clinical terms"
-        >
-          <BookOpen className="w-4 h-4" />
-          <span className="hidden sm:inline">Glossary</span>
-        </button>
+        {/* Right: How it works + Glossary */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openUserGuide}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-muted hover:text-primary hover:border-primary transition-colors"
+            aria-label="Open user guide"
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">How it works</span>
+          </button>
+          <button
+            onClick={openGlossary}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-muted hover:text-primary hover:border-primary transition-colors"
+            aria-label="Open glossary of ML and clinical terms"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span className="hidden sm:inline">Glossary</span>
+          </button>
+        </div>
       </div>
     </header>
   );

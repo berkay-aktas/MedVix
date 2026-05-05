@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 const useModalStore = create((set) => ({
   glossaryOpen: false,
+  userGuideOpen: false,
   columnMapperOpen: false,
   domainSwitchOpen: false,
   domainSwitchTarget: null,
@@ -11,6 +12,9 @@ const useModalStore = create((set) => ({
 
   openGlossary: () => set({ glossaryOpen: true }),
   closeGlossary: () => set({ glossaryOpen: false }),
+
+  openUserGuide: () => set({ userGuideOpen: true }),
+  closeUserGuide: () => set({ userGuideOpen: false }),
 
   openColumnMapper: () => set({ columnMapperOpen: true }),
   closeColumnMapper: () => set({ columnMapperOpen: false }),

@@ -75,6 +75,22 @@ class DomainDetail(DomainSummary):
         default=None,
         description="Real-world population percentages for training data comparison",
     )
+    positive_label: Optional[str] = Field(
+        default=None,
+        description="Short clinical label for the positive class (e.g., 'Disease present', 'High risk')",
+    )
+    negative_label: Optional[str] = Field(
+        default=None,
+        description="Short clinical label for the negative class (e.g., 'No disease detected')",
+    )
+    positive_class_meaning: Optional[str] = Field(
+        default=None,
+        description="Plain-language sentence describing what a positive prediction means clinically",
+    )
+    negative_class_meaning: Optional[str] = Field(
+        default=None,
+        description="Plain-language sentence describing what a negative prediction means clinically",
+    )
 
 
 class DomainListResponse(BaseModel):

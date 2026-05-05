@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { Construction } from 'lucide-react';
 import PageLayout from './components/layout/PageLayout';
 import GlossaryModal from './components/modals/GlossaryModal';
+import UserGuideModal from './components/modals/UserGuideModal';
 import DomainSwitchModal from './components/modals/DomainSwitchModal';
 import ColumnMapperModal from './components/modals/ColumnMapperModal';
 import DataInspectorModal from './components/modals/DataInspectorModal';
@@ -152,6 +153,7 @@ export default function App() {
 
       {/* Global modals */}
       <GlossaryModal />
+      <UserGuideModal />
       <DomainSwitchModal />
       <ColumnMapperModal />
       <DataInspectorModal />

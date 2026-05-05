@@ -86,6 +86,12 @@ export default function Step1ClinicalContext() {
   const whyItMatters = detail?.why_it_matters || null;
   const aiLimitation = detail?.ai_limitation_note || null;
   const featureNames = detail?.feature_names || localDomain.key_variables;
+  const positiveLabel = detail?.positive_label;
+  const negativeLabel = detail?.negative_label;
+  const positiveMeaning = detail?.positive_class_meaning;
+  const negativeMeaning = detail?.negative_class_meaning;
+  const problemType = detail?.problem_type || 'binary';
+  const targetClassesArr = detail?.target_classes || [];
   const datasetRows = detail?.dataset_rows || localDomain.dataset_info.rows;
   const datasetFeatures =
     detail?.dataset_features || localDomain.dataset_info.features;
@@ -158,6 +164,61 @@ export default function Step1ClinicalContext() {
                   <p className="text-base italic text-dark leading-relaxed border-l-4 border-primary bg-primary-bg/50 pl-4 py-2 rounded-r-lg">
                     {clinicalQuestion}
                   </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* What we predict — concrete outcome breakdown */}
+          {!isLoading && (
+            <Card>
+              <div className="flex items-start gap-3">
+                <Database className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">
+                    What we predict
+                  </h3>
+                  <p className="text-sm text-dark leading-relaxed mb-3">
+                    {problemType === 'binary' ? (
+                      <>The model outputs a <strong>probability score (0&ndash;1)</strong> answering the clinical question above. A score above 0.5 is classified as <strong>positive</strong>; below 0.5 is classified as <strong>negative</strong>.</>
+                    ) : (
+                      <>The model outputs probability scores across <strong>{targetClassesArr.length || 'multiple'}</strong> classes. The class with the highest probability is the model's prediction.</>
+                    )}
+                  </p>
+                  {problemType === 'binary' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+                            Positive ({positiveLabel || 'class 1'})
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-700 leading-relaxed">
+                          {positiveMeaning ||
+                            'The model predicts the condition described in the clinical question is present.'}
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="w-2 h-2 rounded-full bg-slate-400" />
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                            Negative ({negativeLabel || 'class 0'})
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-700 leading-relaxed">
+                          {negativeMeaning ||
+                            'The model predicts the condition described in the clinical question is not present.'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {positiveRate && (
+                    <p className="text-[11px] text-muted mt-2.5">
+                      <span className="font-semibold text-dark">Class balance:</span>{' '}
+                      <span className="font-mono">{positiveRate}</span> of training data is positive.
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
