@@ -11,6 +11,7 @@ import { getDomainById } from '../../utils/domains';
  */
 export default function Navbar() {
   const selectedDomain = usePipelineStore((s) => s.selectedDomain);
+  const setStep = usePipelineStore((s) => s.setStep);
   const openGlossary = useModalStore((s) => s.openGlossary);
 
   const domain = selectedDomain ? getDomainById(selectedDomain) : null;
@@ -18,16 +19,21 @@ export default function Navbar() {
   return (
     <header className="h-14 bg-white border-b border-border sticky top-0 z-50 px-4 sm:px-6">
       <div className="h-full max-w-[1400px] mx-auto flex items-center justify-between gap-4">
-        {/* Left: Brand */}
-        <div className="flex items-center gap-2.5">
+        {/* Left: Brand — click to go back to Step 1 */}
+        <button
+          type="button"
+          onClick={() => setStep(1)}
+          aria-label="MedVix home — go to Step 1"
+          className="flex items-center gap-2.5 -ml-1 px-1 py-1 rounded-lg hover:bg-slate-50 active:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
           <img
             src="/logo.png"
             alt="MedVix"
-            className="w-9 h-9 flex-shrink-0"
-            width={36}
-            height={36}
+            className="w-11 h-11 flex-shrink-0"
+            width={44}
+            height={44}
           />
-          <div className="hidden sm:block">
+          <div className="hidden sm:block text-left">
             <div className="text-sm font-semibold text-dark leading-tight">
               MedVix
             </div>
@@ -35,7 +41,7 @@ export default function Navbar() {
               ML Visualization Tool
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Center: Domain badge */}
         {domain && (
