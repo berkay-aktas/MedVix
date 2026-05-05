@@ -71,6 +71,32 @@ export default function App() {
   const setDomain = usePipelineStore((s) => s.setDomain);
   const selectedDomain = usePipelineStore((s) => s.selectedDomain);
   const completeStep = usePipelineStore((s) => s.completeStep);
+  const resetPipeline = usePipelineStore((s) => s.resetPipeline);
+  const resetData = useDataStore((s) => s.resetData);
+  const sessionId = useDataStore((s) => s.sessionId);
+  const setStep = usePipelineStore((s) => s.setStep);
+
+  // If we restored a sessionId from localStorage but the backend session is gone
+  // (e.g. server restarted), wipe the persisted state so the user starts cleanly
+  // instead of hitting 404s on every Step 5/6/7 fetch.
+  useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await api.get(`/data/summary?session_id=${sessionId}`);
+        // Session is alive — keep restored state.
+      } catch (err) {
+        if (cancelled) return;
+        if (err.status === 404) {
+          resetData();
+          resetPipeline();
+          setStep(1);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load domains from API on mount and auto-select first
   useEffect(() => {

@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-const useMLStore = create((set) => ({
+const useMLStore = create(
+  persist(
+    (set) => ({
   selectedModel: null,
   hyperparams: {},
   trainedModels: [],
@@ -43,6 +46,18 @@ const useMLStore = create((set) => ({
       autoRetrain: false,
       comparison: null,
     }),
-}));
+    }),
+    {
+      name: 'medvix-ml',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        selectedModel: state.selectedModel,
+        hyperparams: state.hyperparams,
+        trainedModels: state.trainedModels,
+        activeModelResult: state.activeModelResult,
+      }),
+    }
+  )
+);
 
 export default useMLStore;

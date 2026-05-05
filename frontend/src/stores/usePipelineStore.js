@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-const usePipelineStore = create((set, get) => ({
+const usePipelineStore = create(
+  persist(
+    (set, get) => ({
   currentStep: 1,
   completedSteps: new Set(),
   selectedDomain: null,
@@ -49,6 +52,24 @@ const usePipelineStore = create((set, get) => ({
     if (step === 1) return true;
     return completedSteps.has(step - 1) || completedSteps.has(step);
   },
-}));
+    }),
+    {
+      name: 'medvix-pipeline',
+      storage: createJSONStorage(() => localStorage),
+      // Set is not JSON-serialisable; convert to / from Array on the way out / in.
+      partialize: (state) => ({
+        currentStep: state.currentStep,
+        completedSteps: Array.from(state.completedSteps),
+        selectedDomain: state.selectedDomain,
+        domainDetail: state.domainDetail,
+      }),
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...(persistedState || {}),
+        completedSteps: new Set((persistedState && persistedState.completedSteps) || []),
+      }),
+    }
+  )
+);
 
 export default usePipelineStore;

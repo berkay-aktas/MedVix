@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-const useDataStore = create((set) => ({
+const useDataStore = create(
+  persist(
+    (set) => ({
   sessionId: null,
   dataset: null,
   columnSummary: null,
@@ -56,6 +59,19 @@ const useDataStore = create((set) => ({
       uploadResponse: null,
       warnings: [],
     }),
-}));
+    }),
+    {
+      name: 'medvix-data',
+      storage: createJSONStorage(() => localStorage),
+      // Persist only the session pointer + lightweight summary state.
+      // Heavy fields (dataset, preview) are re-fetched from the backend on mount.
+      partialize: (state) => ({
+        sessionId: state.sessionId,
+        targetColumn: state.targetColumn,
+        schemaOK: state.schemaOK,
+      }),
+    }
+  )
+);
 
 export default useDataStore;
