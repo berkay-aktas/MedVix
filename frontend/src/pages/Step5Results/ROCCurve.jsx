@@ -9,6 +9,8 @@ import {
   ReferenceLine,
 } from 'recharts';
 import Card from '../../components/ui/Card';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { CHART_EXPLANATIONS } from './chartExplanations';
 
 /**
  * R O C Curve component for Step 5 (Results) of the MedVix pipeline.
@@ -34,9 +36,12 @@ export default function ROCCurve({ rocData }) {
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-          ROC Curve
-        </h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+            ROC Curve
+          </h3>
+          <MetricInfoPopover explanation={CHART_EXPLANATIONS.roc_curve} />
+        </div>
         <span className="text-xs font-mono font-semibold text-primary bg-primary-bg rounded-full px-3 py-0.5">
           AUC = {rocData.auc?.toFixed(3) ?? 'N/A'}
         </span>

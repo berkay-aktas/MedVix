@@ -11,6 +11,8 @@ import {
   ReferenceArea,
 } from 'recharts';
 import Card from '../../components/ui/Card';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { CHART_EXPLANATIONS } from './chartExplanations';
 
 /**
  * Cross Validation component for Step 5 (Results) of the MedVix pipeline.
@@ -32,9 +34,12 @@ export default function CrossValidation({ cvData }) {
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-          Cross-Validation ({cvData.n_folds}-Fold)
-        </h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Cross-Validation ({cvData.n_folds}-Fold)
+          </h3>
+          <MetricInfoPopover explanation={CHART_EXPLANATIONS.cross_validation} />
+        </div>
         <div className="flex items-center gap-3">
           <span className="text-xs font-mono font-semibold text-primary bg-primary-bg rounded-full px-3 py-0.5">
             Mean = {(mean * 100).toFixed(1)}%

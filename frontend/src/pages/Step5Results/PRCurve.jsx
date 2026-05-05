@@ -8,6 +8,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import Card from '../../components/ui/Card';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { CHART_EXPLANATIONS } from './chartExplanations';
 
 /**
  * P R Curve component for Step 5 (Results) of the MedVix pipeline.
@@ -27,9 +29,12 @@ export default function PRCurve({ prData }) {
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-          Precision-Recall Curve
-        </h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+            Precision-Recall Curve
+          </h3>
+          <MetricInfoPopover explanation={CHART_EXPLANATIONS.pr_curve} />
+        </div>
         <span className="text-xs font-mono font-semibold text-info bg-blue-50 rounded-full px-3 py-0.5">
           AUC = {prData.auc?.toFixed(3) ?? 'N/A'}
         </span>

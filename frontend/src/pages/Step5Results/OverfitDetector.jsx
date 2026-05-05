@@ -2,6 +2,8 @@ import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Banner from '../../components/ui/Banner';
 import ProgressBar from '../../components/ui/ProgressBar';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { CHART_EXPLANATIONS } from './chartExplanations';
 
 /**
  * Overfit Detector component for Step 5 (Results) of the MedVix pipeline.
@@ -32,6 +34,7 @@ export default function OverfitDetector({ trainAccuracy, testAccuracy }) {
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
           Overfit Detector
         </h3>
+        <MetricInfoPopover explanation={CHART_EXPLANATIONS.overfit_detector} />
       </div>
 
       <div className="space-y-4">

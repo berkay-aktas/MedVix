@@ -1,6 +1,8 @@
 import clsx from 'clsx';
 import Card from '../../components/ui/Card';
 import Banner from '../../components/ui/Banner';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { CHART_EXPLANATIONS } from './chartExplanations';
 
 // Cell labels for a 2x2 confusion matrix
 const CELL_LABELS_2X2 = [
@@ -36,9 +38,12 @@ export default function ConfusionMatrix({ confusionMatrix }) {
 
   return (
     <Card>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted mb-4">
-        Confusion Matrix
-      </h3>
+      <div className="flex items-center gap-1.5 mb-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+          Confusion Matrix
+        </h3>
+        <MetricInfoPopover explanation={CHART_EXPLANATIONS.confusion_matrix} />
+      </div>
 
       <div className="flex justify-center">
         <div>
