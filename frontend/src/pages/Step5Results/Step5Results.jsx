@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
-import { BarChart3, ArrowLeft } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { BarChart3, ArrowLeft, GitCompareArrows } from 'lucide-react';
 import clsx from 'clsx';
 import Banner from '../../components/ui/Banner';
 import Button from '../../components/ui/Button';
 import useMLStore from '../../stores/useMLStore';
 import usePipelineStore from '../../stores/usePipelineStore';
 import StickyModelBar from './StickyModelBar';
+import ModelCompareModal from './ModelCompareModal';
 import MetricsGrid from './MetricsGrid';
 import ConfusionMatrix from './ConfusionMatrix';
 import ROCCurve from './ROCCurve';
@@ -28,6 +29,7 @@ export default function Step5Results() {
   const setStep = usePipelineStore((s) => s.setStep);
   const completeStep = usePipelineStore((s) => s.completeStep);
   const inlineSwitcherRef = useRef(null);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   // Mark step 5 complete when results are available
   useEffect(() => {
@@ -138,8 +140,23 @@ export default function Step5Results() {
               </button>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setCompareOpen(true)}
+            className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-primary border border-primary hover:bg-primary-bg transition-colors"
+          >
+            <GitCompareArrows className="w-3.5 h-3.5" />
+            Compare side-by-side
+          </button>
         </div>
       )}
+
+      <ModelCompareModal
+        open={compareOpen}
+        onClose={() => setCompareOpen(false)}
+        trainedModels={trainedModels}
+        defaultActiveId={result.model_id}
+      />
 
       {/* Overfit warning at top if severe */}
       {result.overfit_warning && (
