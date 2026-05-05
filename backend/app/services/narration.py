@@ -152,6 +152,17 @@ def narrate_checklist(checklist_status: Optional[Dict[str, bool]]) -> str:
     return f"{checked} of {total} EU AI Act compliance requirements are marked as met."
 
 
+def _join_with_and(items: List[str]) -> str:
+    """Format a list as 'A', 'A and B', or 'A, B, and C'."""
+    if len(items) == 0:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} and {items[1]}"
+    return ", ".join(items[:-1]) + f", and {items[-1]}"
+
+
 def narrate_session(
     session: SessionState,
     model_id: str,
@@ -165,9 +176,17 @@ def narrate_session(
     date_str = _format_date(today)
 
     domain = get_domain_detail(session.domain_id)
-    model_data = (session.trained_models or {}).get(model_id) or {}
-    model_type = model_data.get("model_type") or "model"
-    model_display = _model_display_name(model_type, fallback=model_data.get("model_name"))
+    trained_models = session.trained_models or {}
+    n_models = len(trained_models)
+
+    all_displays: List[str] = []
+    for m_data in trained_models.values():
+        m_type = m_data.get("model_type") or "model"
+        all_displays.append(_model_display_name(m_type, fallback=m_data.get("model_name")))
+
+    active_model_data = trained_models.get(model_id) or {}
+    active_type = active_model_data.get("model_type") or "model"
+    active_display = _model_display_name(active_type, fallback=active_model_data.get("model_name"))
 
     n_train = len(session.X_train) if session.X_train is not None else 0
     n_test = len(session.X_test) if session.X_test is not None else 0
@@ -175,17 +194,27 @@ def narrate_session(
     n_features = len(session.feature_columns or [])
 
     sentences: List[str] = []
-    sentences.append(
-        f"On {date_str}, MedVix trained a {model_display} classifier "
-        f"{narrate_dataset(domain, n_rows, n_features)}."
-    )
+    if n_models > 1:
+        sentences.append(
+            f"On {date_str}, MedVix trained {n_models} candidate models "
+            f"({_join_with_and(all_displays)}) "
+            f"{narrate_dataset(domain, n_rows, n_features)}."
+        )
+    else:
+        sentences.append(
+            f"On {date_str}, MedVix trained a {active_display} classifier "
+            f"{narrate_dataset(domain, n_rows, n_features)}."
+        )
 
     prep_text = narrate_preparation(session.preparation_config)
     if prep_text:
         sentences.append(prep_text)
 
-    metrics_text = narrate_metrics(model_data.get("metrics") or [])
+    metrics_text = narrate_metrics(active_model_data.get("metrics") or [])
     if metrics_text:
+        # Multi-model paragraphs need to attribute the metric sentence to the active model.
+        if n_models > 1 and metrics_text.startswith("It "):
+            metrics_text = f"The active {active_display} " + metrics_text[3:]
         sentences.append(metrics_text)
 
     fairness_text = narrate_fairness(bias)
