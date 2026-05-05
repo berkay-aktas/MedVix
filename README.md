@@ -8,9 +8,15 @@ app_port: 7860
 pinned: false
 ---
 
-# MedVix — ML Visualization Tool for Healthcare Professionals
+<p align="center">
+  <img src="frontend/public/logo.png" alt="MedVix logo" width="140" height="140" />
+</p>
 
-> An interactive 7-step pipeline for training, evaluating, and explaining machine learning models across 20 clinical specialties.
+<h1 align="center">MedVix</h1>
+
+<p align="center"><strong>ML Visualization Tool for Healthcare Professionals</strong></p>
+
+<p align="center"><em>An interactive 7-step pipeline for training, evaluating, and explaining machine learning models across 20 clinical specialties — designed to harmonise clinicians and data scientists on the same screen.</em></p>
 
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
@@ -75,10 +81,10 @@ MedVix covers the full lifecycle of a clinical ML project through seven guided s
 | 1 | Clinical Context | Choose from 20 medical specialties; view clinical question, target variable, dataset info, and domain glossary |
 | 2 | Data Exploration | CSV upload (up to 50 MB) or one-click built-in dataset loading; automatic column type detection; quality scoring (completeness, duplicates, cardinality, class balance); column role mapper (feature / target / ignore) |
 | 3 | Data Preparation | Configurable train/test split (10–40%); missing-value strategies per column (median, mode, row removal); normalisation (z-score / min-max / none); SMOTE oversampling; outlier detection; before/after statistics comparison |
-| 4 | Model & Parameters | 8 ML models (KNN, SVM, Decision Tree, Random Forest, Logistic Regression, Naive Bayes, XGBoost, LightGBM); interactive hyperparameter sliders; auto-retrain on change; side-by-side model comparison |
-| 5 | Results & Evaluation | Accuracy, Sensitivity (Recall), Specificity, Precision, F1-Score, AUC-ROC; confusion matrix heatmap; ROC and Precision-Recall curves; k-fold cross-validation summary |
-| 6 | Explainability | Global SHAP feature importance bar chart; single-patient waterfall plot; feature contribution ranked table; plain-English interpretation tooltips |
-| 7 | Ethics & Bias | Subgroup fairness table (age, sex, and domain-specific groups); EU AI Act risk-tier compliance checklist; curated AI failure case studies; downloadable PDF ethics summary certificate |
+| 4 | Model & Parameters | 8 ML models (KNN, SVM, Decision Tree, Random Forest, Logistic Regression, Naive Bayes, XGBoost, LightGBM); interactive hyperparameter sliders; auto-retrain on change; **bilingual `(i)` popovers explain every hyperparameter in clinical and technical language** |
+| 5 | Results & Evaluation | Accuracy, Sensitivity (Recall), Specificity, Precision, F1-Score, AUC-ROC; confusion matrix heatmap; ROC and Precision-Recall curves; k-fold cross-validation summary; **bilingual `(i)` popovers on every metric and chart**; **active-model switcher pills** with sticky-on-scroll bar; **side-by-side comparison modal** with ROC curves overlaid and confusion matrices side by side |
+| 6 | Explainability | Global SHAP feature importance bar chart; single-patient SHAP waterfall; **2-D Patient Risk Map** (PCA scatter coloured by probability / sex / age, click to drill in); **Counterfactual Explorer** — drag sliders to see how a patient's prediction would change in real time, with one-click "auto-find smallest flip" |
+| 7 | Ethics & Bias | Subgroup fairness table (age, sex, domain-specific groups); EU AI Act risk-tier compliance checklist; curated AI failure case studies; downloadable PDF ethics certificate listing **all candidate models evaluated**; **deterministic Pipeline Receipt** — plain-English prose paragraph summarising every decision in the session, generated without an LLM |
 
 ---
 
@@ -883,6 +889,16 @@ MedVix followed a 5-sprint Scrum schedule with two-week sprints. **All five spri
 - **Lighthouse scores**: Performance 88, Accessibility 96, Best Practices 92, SEO 100
 - **Docker cold start**: 22 s end-to-end (target ≤ 30 s)
 - **Code documentation**: comprehensive JSDoc + Python docstring coverage shipped in commit `f01b608`
+- **Bilingual `(i)` info popovers** with staggered clinical-then-technical reveal — applied to every metric, chart, and hyperparameter across Steps 4, 5, and 6
+- **Counterfactual Explorer** (Step 6) — interactive sliders + auto-find single-feature flip, with human-readable labels (`Female / Male`, `Yes / No`) for binary features
+- **Patient Risk Map** (Step 6) — 2-D PCA scatter with subgroup colour modes
+- **Pipeline Receipt** (Step 7) — deterministic plain-English prose narrative of the full session, generated without an LLM
+- **Side-by-side model comparison modal** with ROC curves overlaid and mini confusion matrices
+- **Sticky model switcher** that fades in below the navbar after the inline switcher scrolls out of view
+- **localStorage persistence** so accidental refreshes do not lose pipeline progress
+- **Stale-models warning** when revisiting Step 2 or 3 with already-trained models
+- **Brand logo** in navbar + favicon
+- **PDF certificate prose** rewritten to acknowledge all candidate models when more than one is trained
 
 ---
 
