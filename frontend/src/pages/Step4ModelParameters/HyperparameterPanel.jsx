@@ -5,6 +5,8 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SliderControl from '../../components/ui/SliderControl';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { HYPERPARAM_EXPLANATIONS } from './hyperparamExplanations';
 import useMLStore from '../../stores/useMLStore';
 import useDataStore from '../../stores/useDataStore';
 import usePipelineStore from '../../stores/usePipelineStore';
@@ -176,12 +178,18 @@ export default function HyperparameterPanel({ paramConfig }) {
             return (
               <div key={param.name} className="w-full">
                 <div className="flex items-center justify-between mb-2">
-                  <label
-                    htmlFor={`param-${param.name}`}
-                    className="text-sm font-medium text-dark"
-                  >
-                    {param.label || param.name}
-                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <label
+                      htmlFor={`param-${param.name}`}
+                      className="text-sm font-medium text-dark"
+                    >
+                      {param.label || param.name}
+                    </label>
+                    <MetricInfoPopover
+                      explanation={HYPERPARAM_EXPLANATIONS[param.name]}
+                      value={hyperparams[param.name] ?? param.default}
+                    />
+                  </div>
                   <span className="text-sm font-mono font-semibold text-primary bg-primary-bg rounded-full px-3 py-0.5">
                     {hyperparams[param.name] ?? param.default}
                   </span>
@@ -212,6 +220,12 @@ export default function HyperparameterPanel({ paramConfig }) {
             <div key={param.name}>
               <SliderControl
                 label={param.label || param.name}
+                labelSuffix={
+                  <MetricInfoPopover
+                    explanation={HYPERPARAM_EXPLANATIONS[param.name]}
+                    value={value}
+                  />
+                }
                 min={param.min}
                 max={param.max}
                 step={param.step || (param.type === 'float' ? 0.01 : 1)}

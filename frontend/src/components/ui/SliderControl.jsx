@@ -8,6 +8,7 @@ import clsx from 'clsx';
  */
 export default function SliderControl({
   label,
+  labelSuffix,
   min = 0,
   max = 100,
   step = 1,
@@ -23,7 +24,10 @@ export default function SliderControl({
   return (
     <div className={clsx('w-full', className)}>
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-dark">{label}</label>
+        <div className="flex items-center gap-1.5">
+          <label className="text-sm font-medium text-dark">{label}</label>
+          {labelSuffix}
+        </div>
         <span className="text-sm font-mono font-semibold text-primary bg-primary-bg rounded-full px-3 py-0.5">
           {displayValue}
         </span>
