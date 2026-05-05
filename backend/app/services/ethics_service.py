@@ -331,7 +331,8 @@ def generate_certificate_pdf(
     pdf.set_xy(85, card_y + 3)
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(*_C_MUTED)
-    pdf.cell(50, 5, "MODEL", new_x="LMARGIN", new_y="NEXT")
+    n_models_for_label = len(session.trained_models or {})
+    pdf.cell(50, 5, "ACTIVE MODEL" if n_models_for_label > 1 else "MODEL", new_x="LMARGIN", new_y="NEXT")
     pdf.set_xy(85, card_y + 8)
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(*_C_DARK)
@@ -420,7 +421,11 @@ def generate_certificate_pdf(
         pdf.ln(3)
 
     # ── Section: Active Model Metrics ──
-    _section_header(pdf, f"Detailed Metrics - {model_name}", pw)
+    _section_header(
+        pdf,
+        f"Detailed Metrics - {model_name}" + (" (active selection)" if n_models > 1 else ""),
+        pw,
+    )
 
     # Table header
     col_widths = [pw * 0.38, pw * 0.22, pw * 0.22, pw * 0.18]
@@ -683,11 +688,26 @@ def generate_certificate_pdf(
 
     compliance_verdict = f"{checked_count} of 8 EU AI Act requirements are currently met."
 
-    assessment = (
-        f"The {model_name} model applied to {domain.name} {perf_verdict} "
-        f"with {acc_val:.1%} accuracy and {auc_val:.3f} AUC-ROC. "
-        f"{bias_verdict} {compliance_verdict}"
-    )
+    # Build candidate-models phrase if more than one was trained, so the
+    # paragraph acknowledges the comparison table above.
+    if n_models > 1:
+        from app.services.narration import _join_with_and, _model_display_name
+        candidate_displays = [
+            _model_display_name(d.get("model_type", "?"), fallback=d.get("model_name"))
+            for d in (session.trained_models or {}).values()
+        ]
+        intro = (
+            f"MedVix trained {n_models} candidate models ({_join_with_and(candidate_displays)}) "
+            f"on the {domain.name} dataset; the {model_name} was selected as the active model and "
+            f"{perf_verdict} with {acc_val:.1%} accuracy and {auc_val:.3f} AUC-ROC."
+        )
+    else:
+        intro = (
+            f"The {model_name} model applied to {domain.name} {perf_verdict} "
+            f"with {acc_val:.1%} accuracy and {auc_val:.3f} AUC-ROC."
+        )
+
+    assessment = f"{intro} {bias_verdict} {compliance_verdict}"
 
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*_C_TEXT)
