@@ -19,10 +19,14 @@ export default function Navbar() {
     <header className="h-14 bg-white border-b border-border sticky top-0 z-50 px-4 sm:px-6">
       <div className="h-full max-w-[1400px] mx-auto flex items-center justify-between gap-4">
         {/* Left: Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">M</span>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <img
+            src="/logo.png"
+            alt="MedVix"
+            className="w-9 h-9 flex-shrink-0"
+            width={36}
+            height={36}
+          />
           <div className="hidden sm:block">
             <div className="text-sm font-semibold text-dark leading-tight">
               MedVix
