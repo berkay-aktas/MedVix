@@ -1,6 +1,8 @@
 import { Star } from 'lucide-react';
 import clsx from 'clsx';
 import Card from '../../components/ui/Card';
+import MetricInfoPopover from '../../components/ui/MetricInfoPopover';
+import { METRIC_EXPLANATIONS } from './metricExplanations';
 
 function getStatusColor(value) {
   if (value >= 0.8) return 'border-emerald-500';
@@ -39,9 +41,15 @@ export default function MetricsGrid({ metrics }) {
             )}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-                {metric.label || metric.name}
-              </span>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted truncate">
+                  {metric.label || metric.name}
+                </span>
+                <MetricInfoPopover
+                  value={metric.value}
+                  explanation={METRIC_EXPLANATIONS[metric.name]}
+                />
+              </div>
               {metric.is_priority && (
                 <Star className="w-4 h-4 text-amber-500 fill-amber-500 flex-shrink-0" />
               )}
