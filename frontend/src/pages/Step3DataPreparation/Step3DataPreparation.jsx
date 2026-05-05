@@ -13,6 +13,7 @@ import api from '../../utils/api';
 import SplitVisualizer from './SplitVisualizer';
 import NormalisationResults from './NormalisationResults';
 import SmoteResults from './SmoteResults';
+import StaleModelsWarning from '../../components/ui/StaleModelsWarning';
 
 /**
  * Step3 Data Preparation component for Step 3 (Data Preparation) of the MedVix pipeline.
@@ -85,6 +86,8 @@ export default function Step3DataPreparation() {
           Configure preprocessing settings before model training.
         </p>
       </div>
+
+      <StaleModelsWarning stepName="data preparation" />
 
       <div className="space-y-5">
         {/* Section 1: Train/Test Split */}

@@ -15,6 +15,7 @@ import DataPreview from './DataPreview';
 import ColumnInfoTable from './ColumnInfoTable';
 import ClassDistribution from './ClassDistribution';
 import DataQualityScore from './DataQualityScore';
+import StaleModelsWarning from '../../components/ui/StaleModelsWarning';
 
 /**
  * Step2 Data Exploration component for Step 2 (Data Exploration) of the MedVix pipeline.
@@ -120,6 +121,8 @@ export default function Step2DataExploration() {
           {domain?.name || 'this domain'}.
         </p>
       </div>
+
+      <StaleModelsWarning stepName="data exploration or column mapping" />
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-5">
         {/* Left panel: Upload / Built-in */}
