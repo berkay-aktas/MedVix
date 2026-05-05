@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { BarChart3, ArrowLeft } from 'lucide-react';
+import clsx from 'clsx';
 import Banner from '../../components/ui/Banner';
 import Button from '../../components/ui/Button';
 import useMLStore from '../../stores/useMLStore';
@@ -22,6 +23,7 @@ export default function Step5Results() {
   const activeModelResult = useMLStore((s) => s.activeModelResult);
   const trainedModels = useMLStore((s) => s.trainedModels);
   const comparison = useMLStore((s) => s.comparison);
+  const setActiveModelResult = useMLStore((s) => s.setActiveModelResult);
   const setStep = usePipelineStore((s) => s.setStep);
   const completeStep = usePipelineStore((s) => s.completeStep);
 
@@ -100,6 +102,34 @@ export default function Step5Results() {
           )}
         </p>
       </div>
+
+      {/* Model switcher — visible whenever 2+ models have been trained */}
+      {trainedModels.length > 1 && (
+        <div className="mb-5 flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Showing:
+          </span>
+          {trainedModels.map((m) => {
+            const isActive = m.model_id === result.model_id;
+            return (
+              <button
+                key={m.model_id}
+                type="button"
+                onClick={() => setActiveModelResult(m)}
+                aria-pressed={isActive}
+                className={clsx(
+                  'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                  isActive
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'bg-white border border-border text-muted hover:bg-slate-50 hover:text-dark'
+                )}
+              >
+                {m.model_name || m.model_type}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Overfit warning at top if severe */}
       {result.overfit_warning && (
