@@ -13,6 +13,7 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import usePipelineStore from '../../stores/usePipelineStore';
 import useModalStore from '../../stores/useModalStore';
+import useDataStore from '../../stores/useDataStore';
 import DOMAINS, { getDomainById, getDomainGradient } from '../../utils/domains';
 import api from '../../utils/api';
 
@@ -31,6 +32,10 @@ export default function Step1ClinicalContext() {
     completeStep,
   } = usePipelineStore();
   const { openGlossary, openDomainSwitch } = useModalStore();
+  const uploadResponse = useDataStore((s) => s.uploadResponse);
+  // Custom CSV is only signalled by uploadResponse.filename when the user
+  // went through /api/data/upload (built-in datasets do not set it).
+  const isCustomDataset = Boolean(uploadResponse?.filename);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -123,6 +128,16 @@ export default function Step1ClinicalContext() {
           className="mb-4"
           onDismiss={() => setError(null)}
         />
+      )}
+
+      {isCustomDataset && (
+        <Banner variant="warning" title="Custom dataset uploaded" className="mb-4">
+          <p className="text-sm mt-1">
+            The clinical context below describes the built-in <strong>{localDomain.name}</strong> scenario.
+            Your uploaded file (<span className="font-mono">{uploadResponse.filename}</span>) may predict a
+            different outcome — the model will use whatever your target column represents.
+          </p>
+        </Banner>
       )}
 
       {/* Two-column layout */}
